@@ -46,14 +46,15 @@ Begin
 	Declare @id_facture INT
 
 	Declare @Fecha datetime
+	Declare @FechaCont datetime
 	Declare @Intentos Int
 	Declare @Minute_wait INT
 
 	Declare @MsjErrorValidar Varchar(MAX)
 	Declare @Mensaje_Error Varchar(500);
 
-	Declare @cur_cd_sucursal CHAR(5)
-	Declare @cur_cd_implante CHAR(5)
+	Declare @cur_cd_sucursal VARCHAR(MAX)
+	Declare @cur_cd_implante VARCHAR(MAX)
 	Declare @cur_id_sucursal INT
 	Declare @cur_id_implante INT
 
@@ -76,6 +77,10 @@ Begin
 	Declare @ds_archivo VARCHAR(250)
 	Declare @id_reserva INT
 	Declare @cd_reserva VARCHAR(10)
+	Declare @cd_sucursal CHAR(5)
+	Declare @cd_implante CHAR(5)
+	Declare @id_sucursal INT
+	Declare @id_implante INT
 
 	Declare @id_monedas_iata INT
 	Declare @id_tiqueteador INT
@@ -157,6 +162,22 @@ Begin
 	Declare @item_cd_AnexoPolizaTAO VARCHAR(50)
 	Declare @item_ds_AutorizacionTarjetaTAO VARCHAR(25)
 	Declare @item_in_cuotasTarjetaTAO INT
+	Declare @item_id_FormasPago INT
+	Declare @item_id_TarjetasCredito INT
+	Declare @item_am_fp1 MONEY
+	Declare @item_ds_cc_code VARCHAR(2)
+	Declare @item_ds_cc_number VARCHAR(25)
+	Declare @item_ds_cc_vence VARCHAR(5)
+	Declare @item_ds_cc_autorizacion VARCHAR(25)
+	Declare @item_ds_cc_voucher VARCHAR(25)
+	Declare @item_in_cc_cuotas INT
+	Declare @item_am_fp2 MONEY
+	Declare @item_ds_cc_code2 VARCHAR(2)
+	Declare @item_ds_cc_number2 VARCHAR(25)
+	Declare @item_ds_cc_vence2 VARCHAR(5)
+	Declare @item_ds_cc_autorizacion2 VARCHAR(25)
+	Declare @item_ds_cc_voucher2 VARCHAR(25)
+	Declare @item_in_cc_cuotas2 INT
 	Declare @item_cd_pax_CC VARCHAR(20)
 	Declare @item_cd_destino VARCHAR(3)
 	Declare @item_ds_clases VARCHAR(61)
@@ -182,11 +203,28 @@ Begin
 	Declare @ds_fpnm_tao VARCHAR(50)
 	Declare @id_tarjetascredito_tao INT
 
-	Declare @ResultTable TABLE (Respuesta VARCHAR(1000), Estado INT)
+	Declare @ResultTable TABLE (
+		Respuesta VARCHAR(1000), 
+		Estado INT,
+		id_ReciboCaja INT,
+		id_FormaPago INT,
+		ds_FormaPago VARCHAR(100),
+		cd_fuente VARCHAR(10),
+		cd_serie VARCHAR(10),
+		cd_consecutivo VARCHAR(20),
+		ds_Tipo VARCHAR(50),
+		am_valor MONEY,
+		Resolucionmsg VARCHAR(1000),
+		NCF VARCHAR(50),
+		FechaCaducidad DATETIME,
+		ds_Alerta VARCHAR(1000),
+		in_ConsecutivoUnicoDocumento INT,
+		DocumentoCausacionCxP VARCHAR(100)
+	)
 	Declare @FacturaRespuesta VARCHAR(1000)
 	Declare @FacturaEstado INT
 
-	-- Variables for `#GenerarConceptosAuto` cursor loop
+	-- Variables for #GenerarConceptosAuto cursor loop
 	Declare @c_id_ConceptoFacturacion INT
 	Declare @c_cd_ConceptoFacturacion VARCHAR(50)
 	Declare @c_ds_ConceptoFacturacion VARCHAR(250)
@@ -277,52 +315,52 @@ Begin
 
 	-- Create the temp table to store the query result of spza_GDSFacturacionAuto_Consultar
 	CREATE TABLE #GDSFacturacionAuto (
-		PNR VARCHAR(62),
-		Tipo VARCHAR(4),
-		Servicio VARCHAR(123),
-		Descrip VARCHAR(78),
+		PNR VARCHAR(62) COLLATE DATABASE_DEFAULT,
+		Tipo VARCHAR(4) COLLATE DATABASE_DEFAULT,
+		Servicio VARCHAR(123) COLLATE DATABASE_DEFAULT,
+		Descrip VARCHAR(78) COLLATE DATABASE_DEFAULT,
 		id INT,
 		iden_gds INT,
 		ds_fecha SMALLDATETIME,
-		cd_tiqueteador VARCHAR(6),
-		cd_vendedor CHAR(3),
-		cd_cliente CHAR(10),
+		cd_tiqueteador VARCHAR(6) COLLATE DATABASE_DEFAULT,
+		cd_vendedor CHAR(3) COLLATE DATABASE_DEFAULT,
+		cd_cliente CHAR(10) COLLATE DATABASE_DEFAULT,
 		am_highfare MONEY,
 		am_lowfare MONEY,
 		am_fare MONEY,
-		ds_reasoncode CHAR(2),
-		ds_cliname VARCHAR(250),
-		ds_clidir VARCHAR(250),
-		ds_clicity VARCHAR(50),
-		ds_cliid CHAR(10),
-		ds_itinerario VARCHAR(250),
-		ds_clases VARCHAR(61),
+		ds_reasoncode CHAR(2) COLLATE DATABASE_DEFAULT,
+		ds_cliname VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_clidir VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_clicity VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_cliid CHAR(10) COLLATE DATABASE_DEFAULT,
+		ds_itinerario VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_clases VARCHAR(61) COLLATE DATABASE_DEFAULT,
 		in_nacionalidad TINYINT,
 		id_air INT,
 		ds_pax_number TINYINT,
-		ds_pax_firstnm VARCHAR(30),
-		ds_pax_lastnm VARCHAR(30),
-		ds_pax_prefix CHAR(3),
-		ds_tkt_number CHAR(10),
-		ds_tkt_prefix CHAR(3),
-		ds_aero_code CHAR(3),
-		ds_moneda CHAR(3),
+		ds_pax_firstnm VARCHAR(30) COLLATE DATABASE_DEFAULT,
+		ds_pax_lastnm VARCHAR(30) COLLATE DATABASE_DEFAULT,
+		ds_pax_prefix CHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_tkt_number CHAR(10) COLLATE DATABASE_DEFAULT,
+		ds_tkt_prefix CHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_aero_code CHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_moneda CHAR(3) COLLATE DATABASE_DEFAULT,
 		am_tarifa MONEY,
 		am_iva MONEY,
 		am_tua MONEY,
 		am_comb MONEY,
 		am_vat MONEY,
-		ds_cc_code CHAR(2),
-		ds_cc_number VARCHAR(25),
+		ds_cc_code CHAR(2) COLLATE DATABASE_DEFAULT,
+		ds_cc_number VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		am_tao MONEY,
 		am_ivatao MONEY,
 		am_cap MONEY,
 		am_ivacap MONEY,
-		ds_cc_code2 CHAR(2),
-		ds_cc_number2 CHAR(16),
+		ds_cc_code2 CHAR(2) COLLATE DATABASE_DEFAULT,
+		ds_cc_number2 CHAR(16) COLLATE DATABASE_DEFAULT,
 		am_fp1 MONEY,
 		am_fp2 MONEY,
-		cd_tktrevisado VARCHAR(14),
+		cd_tktrevisado VARCHAR(14) COLLATE DATABASE_DEFAULT,
 		am_TarifaContado MONEY,
 		am_IvaContado MONEY,
 		am_OtrosContado MONEY,
@@ -330,182 +368,198 @@ Begin
 		am_IvaCredito MONEY,
 		am_OtrosCredito MONEY,
 		am_Comision MONEY,
-		cd_clitipodoc VARCHAR(100),
-		cd_clitipotercero CHAR(1),
-		ds_clirazoncial VARCHAR(250),
-		ds_cliname2 VARCHAR(60),
-		ds_clilastname VARCHAR(60),
-		ds_clilastname2 VARCHAR(60),
-		cd_clipais VARCHAR(25),
-		ds_clitel VARCHAR(25),
-		cd_TipoTransaccion VARCHAR(1),
+		cd_clitipodoc VARCHAR(100) COLLATE DATABASE_DEFAULT,
+		cd_clitipotercero CHAR(1) COLLATE DATABASE_DEFAULT,
+		ds_clirazoncial VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_cliname2 VARCHAR(60) COLLATE DATABASE_DEFAULT,
+		ds_clilastname VARCHAR(60) COLLATE DATABASE_DEFAULT,
+		ds_clilastname2 VARCHAR(60) COLLATE DATABASE_DEFAULT,
+		cd_clipais VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_clitel VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_TipoTransaccion VARCHAR(1) COLLATE DATABASE_DEFAULT,
 		Fecha_Salida SMALLDATETIME,
 		Fecha_Llegada SMALLDATETIME,
 		Id_Srv INT,
 		cd_conceptofacturacion INT,
 		cd_tiposervicio INT,
-		cd_proveedores VARCHAR(25),
-		ds_proveedores VARCHAR(250),
+		cd_proveedores VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_proveedores VARCHAR(250) COLLATE DATABASE_DEFAULT,
 		id_car INT,
 		dt_entrega SMALLDATETIME,
 		in_cars INT,
-		cd_carcode VARCHAR(25),
-		cd_conf_car VARCHAR(25),
-		cd_citysalida VARCHAR(25),
+		cd_carcode VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_conf_car VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_citysalida VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		dt_retorno SMALLDATETIME,
-		cd_cartype VARCHAR(25),
-		cd_currency VARCHAR(10),
+		cd_cartype VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_currency VARCHAR(10) COLLATE DATABASE_DEFAULT,
 		am_tarifacar MONEY,
-		cd_bookingsource VARCHAR(25),
-		cd_ratecode VARCHAR(25),
+		cd_bookingsource VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_ratecode VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		id_htl INT,
 		dt_checkin SMALLDATETIME,
 		in_guests INT,
-		cd_confirmation VARCHAR(25),
-		cd_city VARCHAR(25),
-		cd_htlchain VARCHAR(25),
+		cd_confirmation VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_city VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_htlchain VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		dt_checkout SMALLDATETIME,
 		in_noches INT,
-		ds_htlname VARCHAR(250),
+		ds_htlname VARCHAR(250) COLLATE DATABASE_DEFAULT,
 		in_habs INT,
-		cd_bed VARCHAR(25),
-		cd_ratecode_htl VARCHAR(25),
-		cd_htlcur VARCHAR(10),
+		cd_bed VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_ratecode_htl VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_htlcur VARCHAR(10) COLLATE DATABASE_DEFAULT,
 		am_htltarifa MONEY,
-		cd_agcur VARCHAR(10),
+		cd_agcur VARCHAR(10) COLLATE DATABASE_DEFAULT,
 		am_agtarifa MONEY,
-		ds_dir1 VARCHAR(250),
-		ds_tel VARCHAR(25),
-		ds_fax VARCHAR(25),
-		cd_centrocosto VARCHAR(50),
+		ds_dir1 VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_tel VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_fax VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_centrocosto VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		NumTktConj INT,
-		Respuesta VARCHAR(1),
-		ds_solicita VARCHAR(200),
-		cd_pax_CC VARCHAR(20),
-		ds_lapsoviaje VARCHAR(50),
-		ds_archivo VARCHAR(250),
-		ds_Observaciones VARCHAR(8000),
-		ds_ClienteEmail VARCHAR(100),
-		cd_sucursal CHAR(5),
-		cd_implante CHAR(5),
+		Respuesta VARCHAR(1) COLLATE DATABASE_DEFAULT,
+		ds_solicita VARCHAR(200) COLLATE DATABASE_DEFAULT,
+		cd_pax_CC VARCHAR(20) COLLATE DATABASE_DEFAULT,
+		ds_lapsoviaje VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_archivo VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_Observaciones VARCHAR(8000) COLLATE DATABASE_DEFAULT,
+		ds_ClienteEmail VARCHAR(100) COLLATE DATABASE_DEFAULT,
+		cd_sucursal CHAR(5) COLLATE DATABASE_DEFAULT,
+		cd_implante CHAR(5) COLLATE DATABASE_DEFAULT,
 		bl_ClienteActualizar BIT,
 		bl_NotificacionMPD BIT,
-		cd_FormaPagoTAO VARCHAR(3),
-		cd_TarjetaCreditoTAO VARCHAR(4),
-		cd_NumeroTarjetaTAO VARCHAR(25),
-		cd_VencimientoTarjetaTAO CHAR(6),
-		cd_NumeroPolizaTAO VARCHAR(50),
-		cd_AnexoPolizaTAO VARCHAR(50),
+		cd_FormaPagoTAO VARCHAR(3) COLLATE DATABASE_DEFAULT,
+		cd_TarjetaCreditoTAO VARCHAR(4) COLLATE DATABASE_DEFAULT,
+		cd_NumeroTarjetaTAO VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_VencimientoTarjetaTAO CHAR(6) COLLATE DATABASE_DEFAULT,
+		cd_NumeroPolizaTAO VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		cd_AnexoPolizaTAO VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		am_PorDesFormaPagoTA NUMERIC(8,4),
-		cd_Penalidad CHAR(14),
-		ds_cc_vence CHAR(5),
-		ds_cc_vence2 CHAR(5),
-		ds_cc_autorizacion VARCHAR(25),
-		ds_cc_autorizacion2 VARCHAR(25),
-		ds_cc_voucher VARCHAR(25),
-		ds_cc_voucher2 VARCHAR(10),
-		ds_AutorizacionTarjetaTAO VARCHAR(25),
-		ds_VoucherTarjetaTAO VARCHAR(25),
+		cd_Penalidad CHAR(14) COLLATE DATABASE_DEFAULT,
+		ds_cc_vence CHAR(5) COLLATE DATABASE_DEFAULT,
+		ds_cc_vence2 CHAR(5) COLLATE DATABASE_DEFAULT,
+		ds_cc_autorizacion VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_cc_autorizacion2 VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_cc_voucher VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_cc_voucher2 VARCHAR(10) COLLATE DATABASE_DEFAULT,
+		ds_AutorizacionTarjetaTAO VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_VoucherTarjetaTAO VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		am_fptao MONEY,
 		in_cc_cuotas INT,
 		in_cc_cuotas2 INT,
 		in_cuotasTarjetaTAO INT,
-		cd_TipoTarifaTAO VARCHAR(25),
-		cd_TipoTiquete CHAR(3),
+		cd_TipoTarifaTAO VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_TipoTiquete CHAR(3) COLLATE DATABASE_DEFAULT,
 		am_TasaCambio MONEY,
-		cd_tiqueteador_facturador CHAR(3),
+		cd_tiqueteador_facturador CHAR(3) COLLATE DATABASE_DEFAULT,
 		bl_ahorro BIT,
 		in_CantidadTarifaTAO INT,
 		in_CantidadSegmentoTAO INT,
-		cd_tourcode VARCHAR(25),
-		ds_contrato VARCHAR(25),
-		cd_PasaportePax VARCHAR(25),
-		ds_itinerarioaerolinea VARCHAR(128),
-		ds_tkt_prefixIata CHAR(3),
-		ds_Evento VARCHAR(250),
-		cd_iata VARCHAR(25),
-		ds_aero_codeIata CHAR(3),
-		ReservaFactura VARCHAR(100),
-		cd_Ahorro CHAR(3),
-		cd_Categoria VARCHAR(50),
+		cd_tourcode VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_contrato VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_PasaportePax VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_itinerarioaerolinea VARCHAR(128) COLLATE DATABASE_DEFAULT,
+		ds_tkt_prefixIata CHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_Evento VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		cd_iata VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_aero_codeIata CHAR(3) COLLATE DATABASE_DEFAULT,
+		ReservaFactura VARCHAR(100) COLLATE DATABASE_DEFAULT,
+		cd_Ahorro CHAR(3) COLLATE DATABASE_DEFAULT,
+		cd_Categoria VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		Id_FormasPagoAirPlus INT,
-		cd_FormasPagoAirPlus VARCHAR(3),
-		ds_FormasPagoAirPlus VARCHAR(100),
-		cd_TarjetasCreditoAirPlus VARCHAR(4),
-		ds_numerotarjetaAirPlus VARCHAR(25),
+		cd_FormasPagoAirPlus VARCHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_FormasPagoAirPlus VARCHAR(100) COLLATE DATABASE_DEFAULT,
+		cd_TarjetasCreditoAirPlus VARCHAR(4) COLLATE DATABASE_DEFAULT,
+		ds_numerotarjetaAirPlus VARCHAR(25) COLLATE DATABASE_DEFAULT,
 		am_PorFacParcial MONEY,
 		am_PorFacParcial_Utilizar MONEY,
 		in_cantpax INT,
 		Id_Precompra INT,
 		id_sucursal INT,
 		bl_cotizacion BIT,
-		cd_htl VARCHAR(50),
+		cd_htl VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		id_FormasPago INT,
 		id_TarjetasCredito INT,
 		id_formapago_cliente INT,
-		cd_formapago_cliente VARCHAR(3),
-		ds_formapago_cliente VARCHAR(100),
-		cd_fp_OtrosItems VARCHAR(3),
-		cd_auxiliar VARCHAR(50),
-		cd_tipoventa VARCHAR(10),
+		cd_formapago_cliente VARCHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_formapago_cliente VARCHAR(100) COLLATE DATABASE_DEFAULT,
+		cd_fp_OtrosItems VARCHAR(3) COLLATE DATABASE_DEFAULT,
+		cd_auxiliar VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		cd_tipoventa VARCHAR(10) COLLATE DATABASE_DEFAULT,
 		am_iva2 MONEY,
 		cd_licitacion INT,
-		ds_descripcion VARCHAR(500),
+		ds_descripcion VARCHAR(500) COLLATE DATABASE_DEFAULT,
 		id_tipoproveedor INT,
-		cd_tipoproveedor VARCHAR(10),
-		ds_tipoproveedor VARCHAR(100)
+		cd_tipoproveedor VARCHAR(10) COLLATE DATABASE_DEFAULT,
+		ds_tipoproveedor VARCHAR(100) COLLATE DATABASE_DEFAULT
+	);
+
+	CREATE TABLE #CargosImpuestosJob (
+		id INT, id_reserva INT, id_reservaGDS_detalles INT, id_reservaGDS_servicios INT,
+		in_orden INT, cd_codigo INT, ds_nombre VARCHAR(100) COLLATE DATABASE_DEFAULT, cd_tipo CHAR(1) COLLATE DATABASE_DEFAULT, 
+		cd_codigopadre VARCHAR(20) COLLATE DATABASE_DEFAULT, cd_tipopadre VARCHAR(20) COLLATE DATABASE_DEFAULT, am_porcentaje NUMERIC(8,4),
+		am_contado MONEY, am_credito MONEY, am_valor MONEY
+	);
+
+	CREATE TABLE #FormasPagosJob (
+		id INT, id_reserva INT, id_reservaGDS_detalles INT, id_reservaGDS_servicios INT,
+		in_orden INT, id_formaspago INT, cd_codigo VARCHAR(10) COLLATE DATABASE_DEFAULT, ds_nombre VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		id_tarjetascredito INT, cd_tipotarjeta VARCHAR(10) COLLATE DATABASE_DEFAULT, ds_numerotarjeta VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_vouchertarjeta VARCHAR(50) COLLATE DATABASE_DEFAULT, ds_expiraciontarjeta VARCHAR(10) COLLATE DATABASE_DEFAULT, ds_autorizaciontarjeta VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		in_coutas INT, cd_banco VARCHAR(50) COLLATE DATABASE_DEFAULT, ds_cheque VARCHAR(50) COLLATE DATABASE_DEFAULT, ds_plaza VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_referencia VARCHAR(50) COLLATE DATABASE_DEFAULT, ds_Poliza VARCHAR(50) COLLATE DATABASE_DEFAULT, ds_PolizaAnexo VARCHAR(50) COLLATE DATABASE_DEFAULT, am_valor MONEY
 	);
 
 	CREATE TABLE #GenerarConceptosAuto (
 		id_ConceptoFacturacion INT,
-		cd_ConceptoFacturacion VARCHAR(50),
-		ds_ConceptoFacturacion VARCHAR(250),
+		cd_ConceptoFacturacion VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_ConceptoFacturacion VARCHAR(250) COLLATE DATABASE_DEFAULT,
 		id_TiposConceptFac INT,
 		bl_contorlarCargImp BIT,
 		bl_CalculoAutoValoresFacturacion BIT,
 		id_TiposServicio INT,
-		cd_TiposServicio VARCHAR(50),
-		ds_TiposServicio VARCHAR(250),
-		cd_proveedores VARCHAR(25),
-		ds_proveedores VARCHAR(250),
-		cd_tiquete VARCHAR(50),
-		ds_servicio VARCHAR(250),
-		ds_descrip VARCHAR(500),
-		ds_paxname VARCHAR(30),
-		ds_paxape VARCHAR(30),
-		cd_paxtype CHAR(3),
-		ds_paxClasificacion CHAR(6),
+		cd_TiposServicio VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_TiposServicio VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		cd_proveedores VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		ds_proveedores VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		cd_tiquete VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		ds_servicio VARCHAR(250) COLLATE DATABASE_DEFAULT,
+		ds_descrip VARCHAR(500) COLLATE DATABASE_DEFAULT,
+		ds_paxname VARCHAR(30) COLLATE DATABASE_DEFAULT,
+		ds_paxape VARCHAR(30) COLLATE DATABASE_DEFAULT,
+		cd_paxtype CHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_paxClasificacion CHAR(6) COLLATE DATABASE_DEFAULT,
 		in_nacionalidad TINYINT,
 		dt_llegada SMALLDATETIME,
 		dt_salida SMALLDATETIME,
-		cd_cencosto VARCHAR(50),
-		cd_auxiliar VARCHAR(50),
-		cd_item VARCHAR(50),
+		cd_cencosto VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		cd_auxiliar VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		cd_item VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		Valor MONEY,
 		am_Contado MONEY,
 		am_Credito MONEY,
-		ColId VARCHAR(25),
-		cd_Consecutivo_depende VARCHAR(50),
-		CodigoReserva VARCHAR(50),
+		ColId VARCHAR(25) COLLATE DATABASE_DEFAULT,
+		cd_Consecutivo_depende VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		CodigoReserva VARCHAR(50) COLLATE DATABASE_DEFAULT,
 		am_ImpuestoComision MONEY,
-		Respuesta VARCHAR(1000),
+		Respuesta VARCHAR(1000) COLLATE DATABASE_DEFAULT,
 		bl_RutaExentaIva BIT,
 		id_FormasPago INT,
 		id_TarjetasCredito INT,
 		am_basedescuento MONEY,
 		am_pordescuento NUMERIC(8,4),
 		id_FormasPagoAirPlus INT,
-		cd_FormasPagoAirPlus VARCHAR(3),
-		ds_FormasPagoAirPlus VARCHAR(100),
+		cd_FormasPagoAirPlus VARCHAR(3) COLLATE DATABASE_DEFAULT,
+		ds_FormasPagoAirPlus VARCHAR(100) COLLATE DATABASE_DEFAULT,
 		id_TarjetasCreditoAirPlus INT,
-		cd_TarjetasCreditoAirPlus VARCHAR(4),
-		ds_numerotarjetaAirPlus VARCHAR(25)
+		cd_TarjetasCreditoAirPlus VARCHAR(4) COLLATE DATABASE_DEFAULT,
+		ds_numerotarjetaAirPlus VARCHAR(25) COLLATE DATABASE_DEFAULT
 	);
 	
 	While 1 = 1
 	Begin
 		SET @Fecha = GETDATE();
-
+		SELECT @FechaCont=REPLACE(VALOPAR,'/','') FROM dbo.Parametr WHERE PARAMETRO = 'FECHACT'
 		-- Cursor over unique combinations of sucursal/implante in queue
 		--DECLARE curConfigs CURSOR LOCAL FOR
 		---SELECT DISTINCT cd_sucursal, ISNULL(cd_implante, '0')
@@ -514,30 +568,14 @@ Begin
 		SELECT  @cur_cd_sucursal = LTRIM(RTRIM(valor)) from dbo.parametros where id = 902;
 		SELECT  @cur_cd_implante = LTRIM(RTRIM(valor)) from dbo.parametros where id = 903;
 
-		DECLARE curConfigs CURSOR LOCAL FOR
-		SELECT cd_sucursal=@cur_cd_sucursal, cd_implante=ISNULL(@cur_cd_implante, '')
-
-		OPEN curConfigs;
-		FETCH NEXT FROM curConfigs INTO @cur_cd_sucursal, @cur_cd_implante;
-
-		WHILE @@FETCH_STATUS = 0
-		BEGIN
-			-- Resolve ID of sucursal and implante
-			SELECT @cur_id_sucursal = id FROM dbo.Sucursales WHERE cd_codigo = @cur_cd_sucursal;
-			SET @cur_id_implante = NULL;
-			IF @cur_cd_implante <> '0' AND @cur_cd_implante IS NOT NULL
-			BEGIN
-				SELECT @cur_id_implante = id FROM dbo.Implantes WHERE cd_codigo = @cur_cd_implante AND id_sucursal = @cur_id_sucursal;
-			END
-
-			-- Clear and fill temporary table for this configuration
-			DELETE FROM #GDSFacturacionAuto;
-			
-			INSERT INTO #GDSFacturacionAuto
-			EXEC dbo.spza_GDSFacturacionAutoJOB_Consultar 
-				@id_usuario = 1, 
-				@cd_sucursal = @cur_cd_sucursal, 
-				@cd_implante = @cur_cd_implante;
+		-- Clear and fill temporary table for all configured combinations at once
+		DELETE FROM #GDSFacturacionAuto;
+		
+		INSERT INTO #GDSFacturacionAuto
+		EXEC dbo.spza_GDSFacturacionAutoJOB_Consultar 
+			@id_usuario = 1, 
+			@cd_sucursal = @cur_cd_sucursal, 
+			@cd_implante = @cur_cd_implante;
 
 			-- Cursor over unique ReservaFactura in this query result
 			DECLARE curInvoices CURSOR LOCAL FOR
@@ -568,11 +606,20 @@ Begin
 					@ds_Observaciones = ds_Observaciones,
 					@ds_archivo = ds_archivo,
 					@id_reserva = id,
-					@cd_reserva = PNR
+					@cd_reserva = PNR,
+					@cd_sucursal = cd_sucursal,
+					@cd_implante = cd_implante
 				FROM #GDSFacturacionAuto
 				WHERE ReservaFactura = @ReservaFactura;
 
 				-- Resolve IDs for headers
+				IF ISNULL(@cd_sucursal,'')=''
+				BEGIN
+					SET @cd_sucursal='OFP'
+					SET @cd_implante=NULL
+				END
+				SELECT @id_sucursal = id FROM dbo.Sucursales WHERE cd_codigo = @cd_sucursal;
+				SELECT @id_implante = id FROM dbo.Implantes WHERE cd_codigo = @cd_implante AND id_sucursal = @id_sucursal;
 				SELECT @id_monedas_iata = id FROM dbo.Monedas_IATA WHERE cd_codigo = @ds_moneda;
 				SELECT @id_tiqueteador = id FROM dbo.Tiqueteadores WHERE cd_codigo = @cd_tiqueteador;
 				SELECT @id_tipoventa = id_tipoventa FROM dbo.Tiqueteadores WHERE cd_codigo = @cd_tiqueteador;
@@ -636,17 +683,27 @@ Begin
 					id_sucursal,
 					' + ISNULL(CAST(@cur_id_implante AS VARCHAR), 'NULL') + ',
 					id_FormasPago,
-					cd_TarjetaCreditoTAO
+					cd_TarjetaCreditoTAO,
+					iden_gds
 				FROM #GDSFacturacionAuto
 				WHERE ReservaFactura = ''' + REPLACE(@ReservaFactura, '''', '''''') + ''';';
 
-				INSERT INTO #GenerarConceptosAuto
-				EXEC dbo.spza_GenerarConceptosAuto_Consultar
+				EXEC dbo.spza_GenerarConceptosAutoJOB_Consultar
 					@id_usuario = 1,
-					@dt_fechaFactura = @Fecha,
+					@dt_fechaFactura = @FechaCont,
 					@tasa_usd = @am_tcambiousd,
 					@ZML_DatosXML = @ZML_DatosXML;
 
+				
+				DELETE FROM #CargosImpuestosJob;
+				DELETE FROM #FormasPagosJob;
+				
+				DECLARE @id_reservas VARCHAR(8000);
+				SET @id_reservas = CONVERT(VARCHAR(25),@id_reserva)+','
+				
+				INSERT INTO #CargosImpuestosJob EXEC dbo.spza_ReservasGDSJOB_CargosImpuestos @id_reservas = @id_reservas;
+				INSERT INTO #FormasPagosJob EXEC dbo.spza_ReservasGDSJOB_FormasPagos @id_reservas = @id_reservas;
+				
 				-- Cursor over items in this invoice group (Only Aire / Tickets)
 				DECLARE curItems CURSOR LOCAL FOR
 				SELECT 
@@ -658,7 +715,9 @@ Begin
 					Servicio, Descrip, am_TarifaContado, am_IvaContado, am_TarifaCredito, am_IvaCredito, cd_centrocosto, cd_auxiliar,
 					cd_fp_OtrosItems, id_tipoproveedor, cd_tipoproveedor, ds_tipoproveedor, Fecha_Salida, Fecha_Llegada, PNR,
 					ds_itinerarioaerolinea, ds_tkt_prefix, bl_ahorro, cd_VencimientoTarjetaTAO, cd_NumeroPolizaTAO, cd_AnexoPolizaTAO,
-					ds_AutorizacionTarjetaTAO, in_cuotasTarjetaTAO
+					ds_AutorizacionTarjetaTAO, in_cuotasTarjetaTAO, id_FormasPago, id_TarjetasCredito,
+					am_fp1, ds_cc_code, ds_cc_number, ds_cc_vence, ds_cc_autorizacion, ds_cc_voucher, in_cc_cuotas,
+					am_fp2, ds_cc_code2, ds_cc_number2, ds_cc_vence2, ds_cc_autorizacion2, ds_cc_voucher2, in_cc_cuotas2
 				FROM #GDSFacturacionAuto
 				WHERE ReservaFactura = @ReservaFactura AND Tipo = 'Aire';
 
@@ -672,7 +731,9 @@ Begin
 					@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar,
 					@item_cd_fp_OtrosItems, @item_id_tipoproveedor, @item_cd_tipoproveedor, @item_ds_tipoproveedor, @item_Fecha_Salida, @item_Fecha_Llegada, @item_PNR,
 					@item_ds_itinerarioaerolinea, @item_ds_tkt_prefix, @item_bl_ahorro, @item_cd_VencimientoTarjetaTAO, @item_cd_NumeroPolizaTAO, @item_cd_AnexoPolizaTAO,
-					@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO;
+					@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO, @item_id_FormasPago, @item_id_TarjetasCredito,
+					@item_am_fp1, @item_ds_cc_code, @item_ds_cc_number, @item_ds_cc_vence, @item_ds_cc_autorizacion, @item_ds_cc_voucher, @item_in_cc_cuotas,
+					@item_am_fp2, @item_ds_cc_code2, @item_ds_cc_number2, @item_ds_cc_vence2, @item_ds_cc_autorizacion2, @item_ds_cc_voucher2, @item_in_cc_cuotas2;
 
 				WHILE @@FETCH_STATUS = 0
 				BEGIN
@@ -698,7 +759,7 @@ Begin
 						
 						IF @item_cd_destino IS NULL
 						BEGIN
-							SET @item_cd_destino = 'BOG'; -- default fall-back if no itinerary
+							SET @item_cd_destino = 'XXX'; -- default fall-back if no itinerary
 						END
 
 						-- Resolving document type and entities for ticket
@@ -710,13 +771,17 @@ Begin
 						END
 						IF @id_TiposDocumento IS NULL SET @id_TiposDocumento = 1;
 
-						DECLARE @id_entdist INT, @id_entvend INT;
-						SELECT @id_entdist = id FROM dbo.Entidades WHERE cd_siglas = @item_ds_aero_code OR cd_codigo = @item_ds_aero_code;
-						IF @id_entdist IS NULL
+						DECLARE @id_entdist INT, @id_entvend INT, @bl_nogds BIT;
+						SELECT @id_entvend = id ,@bl_nogds=bl_nogds FROM dbo.Entidades WHERE cd_siglas = @item_ds_aero_code OR cd_codigo = @item_ds_aero_code;
+
+						IF ISNULL(@bl_nogds,0) = 1
 						BEGIN
-							SELECT TOP 1 @id_entdist = id FROM dbo.Entidades WHERE cd_siglas = 'AV' OR cd_codigo = '005';
+							SELECT TOP 1 @id_entdist = @id_entvend;
 						END
-						SET @id_entvend = @id_entdist;
+						ELSE
+						BEGIN
+							SELECT TOP 1 @id_entdist = id FROM dbo.Entidades WHERE cd_siglas = 'BP' OR cd_codigo = 'BSP';
+						END
 
 						-- Build cargos/impuestos nested dynamic SQL
 						SET @TarifaSqlStmt = '';
@@ -807,6 +872,106 @@ Begin
 								@SqlStmt = N'''';'
 						END
 
+						-- Cargos e Impuestos Tiquetes desde Tabla Bulk
+						DECLARE curCI CURSOR LOCAL FOR 
+						SELECT cd_codigo, ds_nombre, cd_tipo, am_valor, am_contado, am_credito, am_porcentaje 
+						FROM #CargosImpuestosJob 
+						WHERE id_reserva = @item_id_reserva AND id_reservaGDS_detalles = @item_id_air;
+
+						DECLARE @ci_cd_codigo INT, @ci_ds_nombre VARCHAR(100), @ci_cd_tipo CHAR(1), @ci_am_valor MONEY, @ci_am_contado MONEY, @ci_am_credito MONEY, @ci_am_porcentaje NUMERIC(8,4);
+						OPEN curCI; 
+						FETCH NEXT FROM curCI INTO @ci_cd_codigo, @ci_ds_nombre, @ci_cd_tipo, @ci_am_valor, @ci_am_contado, @ci_am_credito, @ci_am_porcentaje;
+						WHILE @@FETCH_STATUS = 0
+						BEGIN
+							IF @ci_cd_tipo IN ('1','2')
+							BEGIN
+								SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @id_tiquetes = @NewTktId, @id_cargosdesc = ' + CAST(@ci_cd_codigo AS VARCHAR) + ', @ds_cargonm = ' + ISNULL('''' + @ci_ds_nombre + '''', 'NULL') + ', @am_valor = ' + CAST(@ci_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@ci_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@ci_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = N'''';'
+							END
+							ELSE IF @ci_cd_tipo IN ('3','4')
+							BEGIN
+								SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteImpuestos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @id_tiquetes = @NewTktId, @id_impuestosdesc = ' + CAST(@ci_cd_codigo AS VARCHAR) + ', @ds_impuestonm = ' + ISNULL('''' + @ci_ds_nombre + '''', 'NULL') + ', @am_valor = ' + CAST(@ci_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@ci_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@ci_am_credito AS VARCHAR) + ', @am_porcentaje = ' + CAST(@ci_am_porcentaje AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = N'''';'
+							END
+							FETCH NEXT FROM curCI INTO @ci_cd_codigo, @ci_ds_nombre, @ci_cd_tipo, @ci_am_valor, @ci_am_contado, @ci_am_credito, @ci_am_porcentaje;
+						END
+						CLOSE curCI; 
+						DEALLOCATE curCI;
+
+						-- Formas de Pago Tiquetes desde Tabla Bulk o Fallback
+						DECLARE @fp_id_fp INT, @fp_id_tc INT, @fp_numero VARCHAR(50), @fp_valor MONEY, @fp_auth VARCHAR(50);
+						
+						IF NOT EXISTS (SELECT 1 FROM #FormasPagosJob WHERE id_reserva = @item_id_reserva AND id_reservaGDS_detalles = @item_id_air)
+						BEGIN
+							-- Fallback Forma de Pago 1
+							IF ISNULL(@item_am_fp1, 0) > 0
+							BEGIN
+								IF @item_ds_cc_code IS NOT NULL AND RTRIM(LTRIM(@item_ds_cc_code)) <> ''
+								BEGIN
+									SELECT @fp_id_fp = id FROM dbo.FormasPago WHERE cd_codigo = 'TC';
+									SELECT @fp_id_tc = id FROM dbo.tarjetascredito WHERE cd_codigo = @item_ds_cc_code;
+									SET @fp_numero = @item_ds_cc_number;
+									SET @fp_valor = @item_am_fp1;
+									SET @fp_auth = @item_ds_cc_autorizacion;
+									
+									SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + ISNULL(CAST(@fp_id_fp AS VARCHAR),'NULL') + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = ' + ISNULL(CAST(@fp_id_tc AS VARCHAR), 'NULL') + ', @cd_tccode = '''', @ds_tcnumber = ' + ISNULL('''' + @fp_numero + '''', 'NULL') + ', @ds_tcvoucher = ' + ISNULL('''' + @item_ds_cc_voucher + '''', 'NULL') + ', @ds_tcexp = ' + ISNULL('''' + @item_ds_cc_vence + '''', 'NULL') + ', @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @ds_tcautorizacion = ' + ISNULL('''' + @fp_auth + '''', 'NULL') + ', @in_tccuotas = ' + CAST(ISNULL(@item_in_cc_cuotas,1) AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio;'
+								END
+								ELSE
+								BEGIN
+									SELECT @fp_id_fp = id FROM dbo.FormasPago WHERE cd_codigo = 'EFE';
+									SET @fp_valor = @item_am_fp1;
+									
+									SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + ISNULL(CAST(@fp_id_fp AS VARCHAR),'NULL') + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = NULL, @cd_tccode = '''', @ds_tcnumber = NULL, @ds_tcvoucher = NULL, @ds_tcexp = NULL, @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @ds_tcautorizacion = NULL, @in_tccuotas = 1, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio;'
+								END
+							END
+
+							-- Fallback Forma de Pago 2
+							IF ISNULL(@item_am_fp2, 0) > 0
+							BEGIN
+								IF @item_ds_cc_code2 IS NOT NULL AND RTRIM(LTRIM(@item_ds_cc_code2)) <> ''
+								BEGIN
+									SELECT @fp_id_fp = id FROM dbo.FormasPago WHERE cd_codigo = 'TC';
+									SELECT @fp_id_tc = id FROM dbo.tarjetascredito WHERE cd_codigo = @item_ds_cc_code2;
+									SET @fp_numero = @item_ds_cc_number2;
+									SET @fp_valor = @item_am_fp2;
+									SET @fp_auth = @item_ds_cc_autorizacion2;
+									
+									SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + ISNULL(CAST(@fp_id_fp AS VARCHAR),'NULL') + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = ' + ISNULL(CAST(@fp_id_tc AS VARCHAR), 'NULL') + ', @cd_tccode = '''', @ds_tcnumber = ' + ISNULL('''' + @fp_numero + '''', 'NULL') + ', @ds_tcvoucher = ' + ISNULL('''' + @item_ds_cc_voucher2 + '''', 'NULL') + ', @ds_tcexp = ' + ISNULL('''' + @item_ds_cc_vence2 + '''', 'NULL') + ', @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @ds_tcautorizacion = ' + ISNULL('''' + @fp_auth + '''', 'NULL') + ', @in_tccuotas = ' + CAST(ISNULL(@item_in_cc_cuotas2,1) AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio;'
+								END
+								ELSE
+								BEGIN
+									SELECT @fp_id_fp = id FROM dbo.FormasPago WHERE cd_codigo = 'EFE';
+									SET @fp_valor = @item_am_fp2;
+									
+									SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + ISNULL(CAST(@fp_id_fp AS VARCHAR),'NULL') + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = NULL, @cd_tccode = '''', @ds_tcnumber = NULL, @ds_tcvoucher = NULL, @ds_tcexp = NULL, @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @ds_tcautorizacion = NULL, @in_tccuotas = 1, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio;'
+								END
+							END
+
+							-- Si ambas am_fp1 y am_fp2 son nulas o 0, pero hay tarifa:
+							IF ISNULL(@item_am_fp1, 0) = 0 AND ISNULL(@item_am_fp2, 0) = 0 AND ISNULL(@item_am_tarifa, 0) > 0
+							BEGIN
+								SELECT @fp_id_fp = id FROM dbo.FormasPago WHERE cd_codigo = 'EFE';
+								SET @fp_valor = ISNULL(@item_am_tarifa, 0);
+								SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + ISNULL(CAST(@fp_id_fp AS VARCHAR),'NULL') + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = NULL, @cd_tccode = '''', @ds_tcnumber = NULL, @ds_tcvoucher = NULL, @ds_tcexp = NULL, @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @ds_tcautorizacion = NULL, @in_tccuotas = 1;'
+							END
+						END
+						ELSE
+						BEGIN
+							-- Lógica Bulk original
+							DECLARE curFP CURSOR LOCAL FOR 
+							SELECT id_formaspago, id_tarjetascredito, ds_numerotarjeta, am_valor, ds_autorizaciontarjeta 
+							FROM #FormasPagosJob 
+							WHERE id_reserva = @item_id_reserva AND id_reservaGDS_detalles = @item_id_air;
+
+							OPEN curFP; 
+							FETCH NEXT FROM curFP INTO @fp_id_fp, @fp_id_tc, @fp_numero, @fp_valor, @fp_auth;
+							WHILE @@FETCH_STATUS = 0
+							BEGIN
+								SET @TktSqlStmt = @TktSqlStmt + ' EXECUTE dbo.spza_TiqueteFormasPago_Insertar @id_tiquetes = @NewTktId, @id_fac_factura = @NewFacId, @id_fac_remision = @NewRmId, @id_FormasPago = ' + CAST(@fp_id_fp AS VARCHAR) + ', @ds_fpnm = '''', @bl_fprepresenta = 0, @id_TarjetasCredito = ' + ISNULL(CAST(@fp_id_tc AS VARCHAR), 'NULL') + ', @cd_tccode = '''', @ds_tcnumber = ' + ISNULL('''' + @fp_numero + '''', 'NULL') + ', @ds_tcvoucher = NULL, @ds_tcexp = NULL, @cd_idbanco = NULL, @ds_cheque = NULL, @ds_plaza = NULL, @ds_referencia = NULL, @ds_poliza = NULL, @ds_polanexo = NULL, @am_valor = ' + CAST(@fp_valor AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @ds_tcautorizacion = ' + ISNULL('''' + @fp_auth + '''', 'NULL') + ', @in_tccuotas = 1;'
+								FETCH NEXT FROM curFP INTO @fp_id_fp, @fp_id_tc, @fp_numero, @fp_valor, @fp_auth;
+							END
+							CLOSE curFP; 
+							DEALLOCATE curFP;
+						END
+
 						-- Build Tkt Itineraries nested dynamic SQL
 						SET @TktItinSqlStmt = '';
 						SELECT 
@@ -876,14 +1041,14 @@ Begin
 							@ds_records = ''' + @item_PNR + ''',
 							@id_hotel = NULL,
 							@id_precompra = ' + ISNULL(CAST(@item_Id_Precompra AS VARCHAR), 'NULL') + ',
-							@id_TipoTiquete = ' + CAST(@id_TiposDocumento AS VARCHAR) + ',
+							@id_TipoTiquete = ' + 'NULL' + ',
 							@id_ReassonCode = NULL,
 							@cencosto_interno = ''' + ISNULL(@item_cd_centrocosto, '') + ''',
 							@ds_solicita = ''' + ISNULL(@item_ds_solicita, '') + ''',
 							@ds_lapsoviaje = ''' + ISNULL(@item_ds_lapsoviaje, '') + ''',
 							@id_monedas_iata = @id_monedas_iata,
 							@Tcambio = @Tcambio,
-							@cd_TiqueteGr = ' + ISNULL('''' + @ReservaFactura + '''', 'NULL') + ',
+							@cd_TiqueteGr = ' + 'NULL' + ',
 							@SqlStmt = ''' + REPLACE(@TktSqlStmt, '''', '''''') + ''',
 							@SqlStmtItinerarios = ''' + REPLACE(@TktItinSqlStmt, '''', '''''') + ''',
 							@id_sucursal = @id_sucursal,
@@ -896,9 +1061,13 @@ Begin
 							@am_porcentaje_comision_BackEnd = 0,
 							@am_valor_comision_BackEnd = 0,
 							@am_PorFacParcial = ' + CAST(ISNULL(@item_am_PorFacParcial, 100) AS VARCHAR) + ',
-							@in_cantpax = ' + CAST(ISNULL(@item_in_cantpax, 1) AS VARCHAR) + '; ';
+							@in_cantpax = ' + CAST(ISNULL(@item_in_cantpax, 1) AS VARCHAR) + ',
+							@OrdenGrabacion = ' + CAST(ISNULL(@ItemIndex, 1) AS VARCHAR) + ',
+							@cd_Penalidad = NULL,
+							@id_entdistIata = NULL,
+							@id_entvendIata = NULL; ';
 					END
-
+					
 					SET @ItemIndex = @ItemIndex + 1;
 					FETCH NEXT FROM curItems INTO 
 						@item_Tipo, @item_id_reserva, @item_iden_gds, @item_ds_fecha, @item_ds_aero_code, @item_ds_tkt_number, @item_in_nacionalidad, @item_am_tarifa, @item_am_iva, @item_am_tua, @item_am_comb, @item_am_vat, @item_am_Comision,
@@ -909,7 +1078,9 @@ Begin
 						@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar,
 						@item_cd_fp_OtrosItems, @item_id_tipoproveedor, @item_cd_tipoproveedor, @item_ds_tipoproveedor, @item_Fecha_Salida, @item_Fecha_Llegada, @item_PNR,
 						@item_ds_itinerarioaerolinea, @item_ds_tkt_prefix, @item_bl_ahorro, @item_cd_VencimientoTarjetaTAO, @item_cd_NumeroPolizaTAO, @item_cd_AnexoPolizaTAO,
-						@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO;
+						@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO, @item_id_FormasPago, @item_id_TarjetasCredito,
+						@item_am_fp1, @item_ds_cc_code, @item_ds_cc_number, @item_ds_cc_vence, @item_ds_cc_autorizacion, @item_ds_cc_voucher, @item_in_cc_cuotas,
+						@item_am_fp2, @item_ds_cc_code2, @item_ds_cc_number2, @item_ds_cc_vence2, @item_ds_cc_autorizacion2, @item_ds_cc_voucher2, @item_in_cc_cuotas2;
 				END;
 
 				CLOSE curItems;
@@ -1007,9 +1178,8 @@ Begin
 								@c_id_tipoproveedor = tp.id, 
 								@c_cd_tipoproveedor = tp.cd_codigo, 
 								@c_ds_tipoproveedor = tp.ds_nombre 
-							FROM dbo.PROVEEDORES p WITH(NOLOCK)
-							INNER JOIN dbo.TiposProveedores tp WITH(NOLOCK) ON tp.id = p.id_tipoproveedor
-							WHERE p.IDPROVE = @c_cd_proveedores;
+							FROM dbo.TipoProveedores tp WITH(NOLOCK) 
+							WHERE tp.cd_codigo = 'HTL' AND ISNULL(@c_cd_proveedores,'')<>'';
 						END
 
 						SET @SrvCargSqlStmt = 'EXECUTE dbo.spza_ServicioCargos_Insertar 
@@ -1170,18 +1340,18 @@ Begin
 				DEALLOCATE curConcepts;
 
 				-- Execute spza_Factura_Crear inside a TRY CATCH
-				DELETE FROM @ResultTable;
 				SET @FacturaRespuesta = NULL;
 				SET @FacturaEstado = NULL;
 
 				BEGIN TRY
-					INSERT INTO @ResultTable (Respuesta, Estado)
-					EXEC dbo.spza_Factura_Crear
+					DECLARE @ReturnCode INT;
+					
+					EXEC @ReturnCode = dbo.spza_FacturaJOB_Crear
 						@id_usuario = 1,
-						@id_sucursal = @cur_id_sucursal,
-						@id_implante = @cur_id_implante,
-						@dt_fechacont = @Fecha,
-						@dt_vence = @Fecha,
+						@id_sucursal = @id_sucursal,
+						@id_implante = @id_implante,
+						@dt_fechacont = @FechaCont,
+						@dt_vence = @FechaCont,
 						@cd_tercero_codigo = @cd_cliente,
 						@ds_tercero_nombre = @ds_cliname,
 						@cd_cliente_codigo = @cd_cliente,
@@ -1252,22 +1422,31 @@ Begin
 						@bl_FormatoResumidoFactElectro = 0,
 						@bl_ExigeAdjuntoFactElectro = 0,
 						@bl_omitir_Validar_IVA_facturacion = 0,
-						@ZML_AjusteIvaXML = NULL;
+						@ZML_AjusteIvaXML = NULL,
+						@ds_RespuestaJOB = @FacturaRespuesta OUTPUT;
 
-					SELECT TOP 1 @FacturaRespuesta = Respuesta, @FacturaEstado = Estado FROM @ResultTable;
+					IF @ReturnCode = 0
+					BEGIN
+						SET @FacturaEstado = 0;
+					END
+					ELSE
+					BEGIN
+						SET @FacturaEstado = 1;
+						-- @FacturaRespuesta ya contiene el mensaje de error que devolvió el procedimiento
+					END
 				END TRY
 				BEGIN CATCH
 					SET @FacturaEstado = 1;
-					SET @FacturaRespuesta = 'Error crítico al ejecutar spza_Factura_Crear: ' + ERROR_MESSAGE();
+					SET @FacturaRespuesta = ERROR_MESSAGE();
 				END CATCH
-
+				--SET @FacturaRespuesta = @FacturaRespuesta + ' ' + @SqlStmt;
 				-- Log result and clean queue using spza_GDSFacturacionAuto_InsertarLog
 				IF @FacturaEstado = 0
 				BEGIN
 					-- Success log
 					EXEC dbo.spza_GDSFacturacionAuto_InsertarLog
 						@id_usuario = 1,
-						@cd_sucursal = @cur_cd_sucursal,
+						@cd_sucursal = @cd_sucursal,
 						@dt_fecha = @Fecha,
 						@ds_Mensaje = @FacturaRespuesta,
 						@Id_reserva = @id_reserva,
@@ -1281,7 +1460,7 @@ Begin
 					-- Error log
 					EXEC dbo.spza_GDSFacturacionAuto_InsertarLog
 						@id_usuario = 1,
-						@cd_sucursal = @cur_cd_sucursal,
+						@cd_sucursal = @cd_sucursal,
 						@dt_fecha = @Fecha,
 						@ds_Mensaje = @FacturaRespuesta,
 						@Id_reserva = @id_reserva,
@@ -1296,12 +1475,6 @@ Begin
 
 			CLOSE curInvoices;
 			DEALLOCATE curInvoices;
-
-			FETCH NEXT FROM curConfigs INTO @cur_cd_sucursal, @cur_cd_implante;
-		END;
-
-		CLOSE curConfigs;
-		DEALLOCATE curConfigs;
 
 		WaitFor Delay @Tiempo
 	End

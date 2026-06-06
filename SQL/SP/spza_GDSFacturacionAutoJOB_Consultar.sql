@@ -5,8 +5,8 @@ GO
 CREATE PROCEDURE [dbo].[spza_GDSFacturacionAutoJOB_Consultar]
 	-- Parametros del procedimiento
 	@id_usuario INT,
-	@cd_sucursal CHAR(5) = 'OFP',
-	@cd_implante CHAR(5) = NULL ,
+	@cd_sucursal VARCHAR(MAX) = '',
+	@cd_implante VARCHAR(MAX) = '',
 	@bl_factura INT = 1,
 	@bl_cotizacion INT = 0
 With Encryption
@@ -189,7 +189,7 @@ BEGIN
 				END 
 	
 				CREATE TABLE #TablaReservas(Id INT IDENTITY,Id_ReservasGDS INT, id_ReservaGDS_Detalles INT, ds_ItinerarioAerolinea VARCHAR(128)) 
-				EXEC dbo.spza_Get_GDSFacturacionAut_ItinerarioAerolinea 
+				EXEC dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea 
 					@id_usuario		= @id_usuario,
 					@cd_sucursal	= @cd_sucursal,
 					@cd_implante	= @cd_implante 
@@ -232,9 +232,9 @@ BEGIN
 						r.am_lowfare,
 						r.am_fare,
 						r.ds_reasoncode,
-						r.ds_cliname,
-						r.ds_clidir,
-						r.ds_clicity,
+						ds_cliname = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_cliname,''))) = '' THEN ISNULL(c.razoncial, '') ELSE r.ds_cliname END,
+						ds_clidir = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clidir,''))) = '' THEN ISNULL(c.Direccion, '') ELSE r.ds_clidir END,
+						ds_clicity = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clicity,''))) = '' THEN ISNULL(c.ciudad, '') ELSE r.ds_clicity END,
 						r.ds_cliid,
 						case when r.iden_gds = 2 then r.ds_itinerario    
 							 when isnull(rtrim(tkt.ds_itinerario),'') <> '' AND dbo.fnza_get_ReservasGDSNumeroTKts(r.id)>1 then tkt.ds_itinerario 
@@ -291,7 +291,7 @@ BEGIN
 						ds_clilastname, 
 						ds_clilastname2, 
 						cd_clipais, 
-						ds_clitel,
+						ds_clitel = CASE WHEN LTRIM(RTRIM(ISNULL(ds_clitel,''))) = '' THEN ISNULL(c.telefono, '') ELSE ds_clitel END,
 						cd_TipoTransaccion = CASE WHEN @bl_BSP=1 OR r.cd_TipoTransaccion IN ('A','B') THEN '1' ELSE r.cd_TipoTransaccion END,
 						Fecha_Salida = dbo.fnza_ReservaGdsHora (r.id,LEFT(r.ds_itinerario,3),1,0),
 						Fecha_Llegada =dbo.fnza_ReservaGdsHora (r.id,LEFT(r.ds_itinerario,3),0,1),
@@ -342,7 +342,7 @@ BEGIN
 						Tkt.ds_lapsoviaje,
 						FPA.ds_archivo,
 						r.ds_Observaciones,	/*inicio rgelis 2014/03/28 req.15175*/
-						r.ds_ClienteEmail,
+						ds_ClienteEmail = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_ClienteEmail,''))) = '' THEN ISNULL(c.email, '') ELSE r.ds_ClienteEmail END,
 						r.cd_sucursal,
 						r.cd_implante,
 						r.bl_ClienteActualizar,
@@ -443,8 +443,8 @@ BEGIN
 									LEFT JOIN CLIENTES c ON (c.IDCLIENTE = R.cd_cliente OR c.IDCLIENTE= r.ds_cliid) /*rgelis 2014/12/18 - Toma el vendedor del cliente -EVT*/
 									LEFT JOIN dbo.ConfiguracionClientesFacAuto cc ON cc.cd_codigo = c.IDCLIENTE --rgelis 2018/04/13 req.58321
 									where rd.bl_usada=0 and rd.bl_anulado = 0
-									AND (rfa.cd_sucursal = @cd_sucursal OR @FiltrarSucursalFactAuto = 0)
-									AND (ISNULL(rfa.cd_implante,'0') = @cd_implante  OR @FiltrarImplanteFactAuto = 0)
+									AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = rfa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='' OR @FiltrarSucursalFactAuto = 0)
+									AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(rfa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @FiltrarImplanteFactAuto = 0)
 									AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0)
 								)fpa ON fpa.id_reserva = r.id
 					LEFT JOIN CLIENTES c ON (c.IDCLIENTE = R.cd_cliente OR c.IDCLIENTE= r.ds_cliid) /*rgelis 2014/12/18 - Toma el vendedor del cliente -EVT*/
@@ -469,6 +469,8 @@ BEGIN
 					AND (bl_NoFacturarAutomaticamente = 0 OR CR.ID IS NULL)
 					AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0) --rgelis 2018/04/13 req.58321
 					AND @bl_factura = 1
+					AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = fpa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='')
+					AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(fpa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @cd_implante='0')
 				) AS Itinerario
 				INNER JOIN (Select DISTINCT 
 							Id_Reserva_ReservaGDS_Itinerarios =  ReservaGDS_Itinerarios.Id_Reserva 
@@ -498,9 +500,9 @@ BEGIN
 					r.am_lowfare,
 					r.am_fare,
 					r.ds_reasoncode,
-					r.ds_cliname,
-					r.ds_clidir,
-					r.ds_clicity,
+					ds_cliname = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_cliname,''))) = '' THEN ISNULL(c.razoncial, '') ELSE r.ds_cliname END,
+					ds_clidir = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clidir,''))) = '' THEN ISNULL(c.Direccion, '') ELSE r.ds_clidir END,
+					ds_clicity = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clicity,''))) = '' THEN ISNULL(c.ciudad, '') ELSE r.ds_clicity END,
 					ds_cliid = CASE WHEN ISNULL(r.ds_cliid,'')='' AND ISNULL(r.cd_cliente,'')<>'' THEN r.cd_cliente ELSE r.ds_cliid END,
 					r.ds_itinerario,
 					r.ds_clases,
@@ -549,7 +551,7 @@ BEGIN
 					ds_clilastname, 
 					ds_clilastname2, 
 					cd_clipais, 
-					ds_clitel,
+					ds_clitel = CASE WHEN LTRIM(RTRIM(ISNULL(ds_clitel,''))) = '' THEN ISNULL(c.telefono, '') ELSE ds_clitel END,
 					cd_TipoTransaccion = CASE WHEN @bl_BSP=1 OR r.cd_TipoTransaccion IN ('A','B') THEN '1' ELSE r.cd_TipoTransaccion END,
 					NULL AS 'Fecha_Salida',
 					NULL AS 'Fecha_Llegada',
@@ -600,7 +602,7 @@ BEGIN
 					'' as 'ds_lapsoviaje',
 					FPA.ds_archivo,
 					r.ds_Observaciones, 
-					r.ds_ClienteEmail,
+					ds_ClienteEmail = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_ClienteEmail,''))) = '' THEN ISNULL(c.email, '') ELSE r.ds_ClienteEmail END,
 					r.cd_sucursal,
 					r.cd_implante,
 					bl_ClienteActualizar=0,
@@ -683,8 +685,8 @@ BEGIN
 								LEFT JOIN dbo.ConfiguracionClientesFacAuto cc ON cc.cd_codigo = c.IDCLIENTE --rgelis 2018/04/13 req.58321
 								INNER JOIN @TValorInterfazGDSParametro PA ON PA.id_GDS = r.iden_gds AND PA.id_sys_entidades=131 AND PA.cd_codigo_maestro = 'FacAutoSrvGDS' AND PA.ds_valor = 'SI' --rgelis 2019/10/10 req.92991
 								where srv.bl_usada=0 
-								AND (rfa.cd_sucursal = @cd_sucursal OR @FiltrarSucursalFactAuto = 0)
-								AND (ISNULL(rfa.cd_implante,'0') = @cd_implante  OR @FiltrarImplanteFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = rfa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='' OR @FiltrarSucursalFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(rfa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @FiltrarImplanteFactAuto = 0)
 								AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0)
 							)fpa ON fpa.id_reserva = r.id
 				LEFT JOIN dbo.PROVEEDORES p ON p.IDPROVE = srv.cd_proveedores 
@@ -694,8 +696,8 @@ BEGIN
 				LEFT JOIN dbo.FormasPago FPC ON FPC.cd_codigo = r.cd_formapago_cliente--rgelis 2019/01/24 req.75925
 				INNER JOIN @TValorInterfazGDSParametro PA ON PA.id_GDS = r.iden_gds AND PA.id_sys_entidades=131 AND PA.cd_codigo_maestro = 'FacAutoSrvGDS' AND PA.ds_valor = 'SI' --rgelis 2019/10/10 req.92991
 				LEFT JOIN dbo.TipoProveedores TP ON TP.cd_codigo = srv.cd_tipoproveedor
-				WHERE fpa.cd_sucursal = @cd_sucursal
-				AND (isnull(fpa.cd_implante,'0') = @cd_implante	OR @cd_implante='0') /*rgelis 2014/03/28 req.15175*/
+				WHERE (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = fpa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='')
+				AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(fpa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @cd_implante='0') /*rgelis 2014/03/28 req.15175*/
 				AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0) --rgelis 2018/04/13 req.58321				 
 				AND srv.bl_usada = 0
 				AND @GenerarCotizacion=1
@@ -720,9 +722,9 @@ BEGIN
 					r.am_lowfare,
 					r.am_fare,
 					r.ds_reasoncode,
-					r.ds_cliname,
-					r.ds_clidir,
-					r.ds_clicity,
+					ds_cliname = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_cliname,''))) = '' THEN ISNULL(c.razoncial, '') ELSE r.ds_cliname END,
+					ds_clidir = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clidir,''))) = '' THEN ISNULL(c.Direccion, '') ELSE r.ds_clidir END,
+					ds_clicity = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clicity,''))) = '' THEN ISNULL(c.ciudad, '') ELSE r.ds_clicity END,
 					ds_cliid = CASE WHEN ISNULL(r.ds_cliid,'')='' AND ISNULL(r.cd_cliente,'')<>'' THEN r.cd_cliente ELSE r.ds_cliid END,
 					r.ds_itinerario,
 					r.ds_clases,
@@ -771,7 +773,7 @@ BEGIN
 					ds_clilastname, 
 					ds_clilastname2, 
 					cd_clipais, 
-					ds_clitel,
+					ds_clitel = CASE WHEN LTRIM(RTRIM(ISNULL(ds_clitel,''))) = '' THEN ISNULL(c.telefono, '') ELSE ds_clitel END,
 					r.cd_TipoTransaccion,
 					NULL AS 'Fecha_Salida',
 					NULL AS 'Fecha_Llegada',
@@ -824,7 +826,7 @@ BEGIN
 					'' as 'ds_lapsoviaje',
 					FPA.ds_archivo,
 					r.ds_Observaciones, /*inicio rgelis 2014/03/28 req.15175*/
-					r.ds_ClienteEmail,
+					ds_ClienteEmail = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_ClienteEmail,''))) = '' THEN ISNULL(c.email, '') ELSE r.ds_ClienteEmail END,
 					r.cd_sucursal,
 					r.cd_implante,
 					bl_ClienteActualizar=0,
@@ -905,8 +907,8 @@ BEGIN
 								LEFT JOIN CLIENTES c ON (c.IDCLIENTE = R.cd_cliente OR c.IDCLIENTE= r.ds_cliid) /*rgelis 2014/12/18 - Toma el vendedor del cliente -EVT*/
 								LEFT JOIN dbo.ConfiguracionClientesFacAuto cc ON cc.cd_codigo = c.IDCLIENTE --rgelis 2018/04/13 req.58321
 								where rd.bl_usada=0 and rd.bl_anulado = 0
-								AND (rfa.cd_sucursal = @cd_sucursal OR @FiltrarSucursalFactAuto = 0)
-								AND (ISNULL(rfa.cd_implante,'0') = @cd_implante  OR @FiltrarImplanteFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = rfa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='' OR @FiltrarSucursalFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(rfa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @FiltrarImplanteFactAuto = 0)
 								AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0)
 							)fpa ON fpa.id_reserva = r.id
 				LEFT JOIN dbo.Hoteles h ON h.cd_codigo = htl.cd_htl 
@@ -917,8 +919,8 @@ BEGIN
 				OUTER APPLY dbo.fnza_GetCategoriaVariableGDSTable(r.cd_codigo) AS v
 				LEFT JOIN dbo.FormasPago FPC ON FPC.cd_codigo = r.cd_formapago_cliente--rgelis 2019/01/24 req.75925
 				LEFT JOIN dbo.TipoProveedores TP ON TP.cd_codigo = srv.cd_tipoproveedor
-				WHERE fpa.cd_sucursal = @cd_sucursal
-				AND (isnull(fpa.cd_implante,'0') = @cd_implante	OR @cd_implante='0') /*rgelis 2014/03/28 req.15175*/
+				WHERE (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = fpa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='')
+				AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(fpa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @cd_implante='0') /*rgelis 2014/03/28 req.15175*/
 				AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0) --rgelis 2018/04/13 req.58321				
 				AND srv.bl_usada = 0
 				AND @GenerarCotizacion=1 
@@ -947,9 +949,9 @@ BEGIN
 					r.am_lowfare,
 					r.am_fare,
 					r.ds_reasoncode,
-					ISNULL(r.ds_cliname,'') AS 'ds_cliname',
-					ISNULL(r.ds_clidir,'')	AS 'ds_clidir',
-					ISNULL(r.ds_clicity,'') AS 'ds_clicity',
+					CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_cliname,''))) = '' THEN ISNULL(c.razoncial, '') ELSE r.ds_cliname END AS 'ds_cliname',
+					CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clidir,''))) = '' THEN ISNULL(c.Direccion, '') ELSE r.ds_clidir END AS 'ds_clidir',
+					CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_clicity,''))) = '' THEN ISNULL(c.ciudad, '') ELSE r.ds_clicity END AS 'ds_clicity',
 					ISNULL(r.ds_cliid,'')	AS 'ds_cliid',
 					r.ds_itinerario,
 					r.ds_clases,
@@ -998,7 +1000,7 @@ BEGIN
 					ds_clilastname=replace(ds_clilastname,char(9),''), 
 					ds_clilastname2=replace(ds_clilastname2,char(9),''), 
 					cd_clipais, 
-					ds_clitel,
+					ds_clitel = CASE WHEN LTRIM(RTRIM(ISNULL(ds_clitel,''))) = '' THEN ISNULL(c.telefono, '') ELSE ds_clitel END,
 					cd_TipoTransaccion = CASE WHEN @bl_BSP=1 OR r.cd_TipoTransaccion IN ('A','B') THEN '1' ELSE r.cd_TipoTransaccion END,
 					NULL AS 'Fecha_Salida',
 					NULL AS 'Fecha_Llegada',
@@ -1053,7 +1055,7 @@ BEGIN
 					'' as 'ds_lapsoviaje',
 					FPA.ds_archivo,
 					r.ds_Observaciones,/*inicio rgelis 2014/03/28 req.15175*/
-					r.ds_ClienteEmail,
+					ds_ClienteEmail = CASE WHEN LTRIM(RTRIM(ISNULL(r.ds_ClienteEmail,''))) = '' THEN ISNULL(c.email, '') ELSE r.ds_ClienteEmail END,
 					r.cd_sucursal,
 					r.cd_implante,
 					bl_ClienteActualizar=0,
@@ -1133,8 +1135,8 @@ BEGIN
 								LEFT JOIN CLIENTES c ON (c.IDCLIENTE = R.cd_cliente OR c.IDCLIENTE= r.ds_cliid) /*rgelis 2014/12/18 - Toma el vendedor del cliente -EVT*/
 								LEFT JOIN dbo.ConfiguracionClientesFacAuto cc ON cc.cd_codigo = c.IDCLIENTE --rgelis 2018/04/13 req.58321
 								where rd.bl_usada=0 and rd.bl_anulado = 0
-								AND (rfa.cd_sucursal = @cd_sucursal OR @FiltrarSucursalFactAuto = 0)
-								AND (ISNULL(rfa.cd_implante,'0') = @cd_implante  OR @FiltrarImplanteFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = rfa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='' OR @FiltrarSucursalFactAuto = 0)
+								AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_implante, ',', 0, 1) i WHERE i.Codigo = ISNULL(rfa.cd_implante,'0')) OR ISNULL(@cd_implante,'')='' OR @FiltrarImplanteFactAuto = 0)
 								AND (cc.id IS NOT NULL OR @SoloUtilizarConfgClienteFacAuto=0)
 							)fpa ON fpa.id_reserva = r.id
 				INNER JOIN dbo.ReservaGDS_Servicios srv ON (r.id=srv.id_reserva)
@@ -1210,7 +1212,7 @@ BEGIN
 								'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							 	'Estado: ' + isnull(CAST(ERROR_STATE()    AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
-								'Procedimiento: ' + isnull(ERROR_PROCEDURE(),'')					+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+								'Procedimiento: ' + 'spza_GDSFacturacionAutoJOB_Consultar'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 								'Linea: ' + isnull(CAST(ERROR_LINE() 	   AS VARCHAR(10)),''); 							
 		
 					RAISERROR (@msg,16,126);

@@ -1,8 +1,8 @@
-IF OBJECT_ID('dbo.spza_Factura_Crear', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.spza_Factura_Crear;
+IF OBJECT_ID('dbo.spza_FacturaJOB_Crear', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.spza_FacturaJOB_Crear;
 GO
 
-CREATE PROCEDURE [dbo].[spza_Factura_Crear]
+CREATE PROCEDURE [dbo].[spza_FacturaJOB_Crear]
 	-- Parametros del procedimiento		
 	@id_usuario						INT,  
 	@id_sucursal					INT, 
@@ -80,9 +80,8 @@ CREATE PROCEDURE [dbo].[spza_Factura_Crear]
 	@bl_FormatoResumidoFactElectro	BIT= 0, --rgelis 2018/10/08 Req.63202
 	@bl_ExigeAdjuntoFactElectro		BIT= 0, --rgelis 2019/07/25 req.90259
 	@bl_omitir_Validar_IVA_facturacion BIT = 0,
-	@ZML_AjusteIvaXML				VARCHAR(MAX) = NULL
- 
-
+	@ZML_AjusteIvaXML				VARCHAR(MAX) = NULL,
+	@ds_RespuestaJOB				VARCHAR(MAX) = NULL OUTPUT
 AS
 BEGIN
 	-- SET NOCOUNT ON: Previene que conjuntos de resultados extras interfieran con 
@@ -152,7 +151,7 @@ BEGIN
 												  @bl_auditfail = @bl_af 	 OUTPUT ;
 			IF (@bl_permit = 0)
 			BEGIN 
-				SELECT 'No posee permisos suficientes para ejecutar esta acción.' AS 'Respuesta', 1 AS 'Estado'
+				SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acción.';SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acción.';
 				RETURN @retval;
 			END 
 			
@@ -162,13 +161,14 @@ BEGIN
 			IF NOT EXISTS(SELECT * FROM dbo.Implantes WHERE Implantes.id = @id_implante and Implantes.id_sucursal = @id_sucursal) AND @id_implante IS NOT NULL
 			BEGIN
 				SET @procmsg = 'El Implante ingresado en la Factura no esta asociado a la sucursal, verifique la configuracion implante - sucursal'
-				Select @procmsg As 'Respuesta',	1 AS 'Estado' ;
+				SET @ds_RespuestaJOB = @procmsg;
+				SET @ds_RespuestaJOB = @procmsg;
 				RETURN 1 ;
 			END	
 			
 			IF (RTRIM(ISNULL(@cd_vendedor,'')) = '')
 			BEGIN 
-				SELECT 'No ingreso el vendedor de la factura por favor verificar.' AS 'Respuesta', 1 AS 'Estado'
+				SET @ds_RespuestaJOB = 'No ingreso el vendedor de la factura por favor verificar.';SET @ds_RespuestaJOB = 'No ingreso el vendedor de la factura por favor verificar.';
 				RETURN @retval;
 			END
 					 
@@ -185,7 +185,7 @@ BEGIN
 			--		@ds_msj_rpta		= @ds_msj_rpta OUTPUT
 			--		IF @ds_msj_rpta <> ''
 			--		BEGIN
-			--			Select @cd_cliente_codigo As 'Respuesta',	1 AS 'Estado' ;
+			--			SET @ds_RespuestaJOB = @cd_cliente_codigo;
 			--			RETURN 1 ;
 			--		END 
 			--END 
@@ -303,13 +303,14 @@ BEGIN
 
 			    IF @bl_generadaauto=1
 				BEGIN
-					Select @procmsg As 'Respuesta',	2 AS 'Estado' ;
+					SET @ds_RespuestaJOB = @procmsg;
 				END 
 				ELSE
 				BEGIN
-					Select @procmsg As 'Respuesta',	1 AS 'Estado' ;
+					SET @ds_RespuestaJOB = @procmsg;
 				END
 				
+				SET @ds_RespuestaJOB = @procmsg + ' '+  ISNULL(@Resolucionmsg,'') +' SUCURSAL:' + CONVERT(VARCHAR(3),ISNULL(@id_sucursal,0))+' IMPLANTE:' + CONVERT(VARCHAR(3),ISNULL(@id_implante,0));
 				RETURN 1 ;
 
 			END 
@@ -389,8 +390,8 @@ BEGIN
 													 @admsg      = @procmsg	   ;	 
 					END 		  
 					
-					Select @procmsg As 'Respuesta',
-							1 AS 'Estado' ;
+					SET @ds_RespuestaJOB = @procmsg;
+					SET @ds_RespuestaJOB = @procmsg;
 					RETURN 1 ;
 				END 
 			End
@@ -600,15 +601,16 @@ BEGIN
 					ROLLBACK TRAN ;		
 				END	
 				
-				IF @bl_generadaauto=1
-				BEGIN				
-					SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 2 AS 'Estado' ;
-				END
-				ELSE
-				BEGIN
-					SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 1 AS 'Estado' ;
-				END
+				--IF @bl_generadaauto=1
+				--BEGIN				
+				--	SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 2 AS 'Estado' ;
+				--END
+				--ELSE
+				--BEGIN
+				--	SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 1 AS 'Estado' ;
+				--END
 				
+				SET @ds_RespuestaJOB = 'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.';
 				RETURN 1 
 			END 
 
@@ -810,7 +812,10 @@ BEGIN
 			SET @NewFacId = scope_identity() 
 						
 			--Grabando Items y Formas de Pago
-			EXEC dbo.sp_executesql @SqlStmt, N'@NewFacId int, @NewRmId int, @FechaFac smalldatetime, @id_monedas_iata int, @Tcambio money', @NewFacId, NULL, @dt_fechacont, @id_monedas_iata, @Tcambio
+			--PRINT '--- INICIO DE SQLSTMT ---';
+			--PRINT CAST(@SqlStmt AS NTEXT);
+			--PRINT '--- FIN DE SQLSTMT ---';
+			EXEC dbo.sp_executesql @SqlStmt, N'@NewFacId int, @NewRmId int, @FechaFac smalldatetime, @id_monedas_iata int, @Tcambio money, @id_sucursal int, @id_implante int', @NewFacId, NULL, @dt_fechacont, @id_monedas_iata, @Tcambio, @id_sucursal, @id_implante
 			
 			--Grabando Anticipos de Clientes
 			EXEC dbo.sp_executesql @AnticiposSqlStmt, N'@NewFacId int, @NewRemId int', @NewFacId, NULL
@@ -831,7 +836,7 @@ BEGIN
 				BEGIN 
 					ROLLBACK TRAN ;		
 				END
-				Select @ValidarProveedor As 'Respuesta', 1 AS 'Estado' ;
+				SET @ds_RespuestaJOB = @ValidarProveedor;
 				RETURN @retval;
 			end
 
@@ -849,7 +854,7 @@ BEGIN
 				BEGIN 
 					ROLLBACK TRAN ;		
 				END
-				Select @ValidarSrvAsociado As 'Respuesta', 1 AS 'Estado' ;
+				SET @ds_RespuestaJOB = @ValidarSrvAsociado;
 				RETURN @retval;
 			end
 
@@ -946,8 +951,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @MsjCategorias As 'Respuesta',
-									@EstadoCategorias AS 'Estado' ;
+					SET @ds_RespuestaJOB = @MsjCategorias;
 					RETURN @retval;
 				END
 			END						
@@ -968,8 +972,7 @@ BEGIN
 				BEGIN 
 					ROLLBACK TRAN ;		
 				END
-				Select @Msj As 'Respuesta',
-								@Estado AS 'Estado' ;
+				SET @ds_RespuestaJOB = @Msj;
 				RETURN @retval;
 			END					
 			/*fin rgelis 2013/07/16 req.13313*/
@@ -1066,8 +1069,7 @@ BEGIN
 															@admsg      = @procmsg	   ;	 
 						END 		  
 					
-						Select @procmsg As 'Respuesta',
-								1 AS 'Estado' ;
+						SET @ds_RespuestaJOB = @procmsg;
 						RETURN 1 ;
 					END 
 				END 				
@@ -1111,8 +1113,7 @@ BEGIN
 														@admsg      = @procmsg	   ;	 
 					END 		  
 					
-					Select @procmsg As 'Respuesta',
-							1 AS 'Estado' ;
+					SET @ds_RespuestaJOB = @procmsg;
 					RETURN 1 ;
 				END 
 			END
@@ -1132,8 +1133,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1155,8 +1155,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1178,8 +1177,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1198,7 +1196,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select 'Error afectando la licitación' As 'Respuesta',@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = 'Error afectando la licitación';
 					RETURN @retval;
 				END
 				
@@ -1216,7 +1214,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1244,7 +1242,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END							
@@ -1304,7 +1302,7 @@ BEGIN
 						, @Msj = 'Excedió el máximo numero de tiquetes establecidos por factura. Revisar los parámetros del sistema.' 
 								+ CHAR(13) + 'Parametro: ''Numero máximo de tiquetes en la facturación manual'''
 				
-					Select @Msj As 'Respuesta',@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END 
 			End
@@ -1326,8 +1324,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1349,8 +1346,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1370,8 +1366,7 @@ BEGIN
 				BEGIN 
 					ROLLBACK TRAN ;		
 				END
-				Select @Msj As 'Respuesta',
-								@Estado AS 'Estado' ;
+				SET @ds_RespuestaJOB = @Msj;
 				RETURN @retval;
 			END
 			--fin rgelis 2018/11/22 req.74261
@@ -1393,8 +1388,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
 				END
 			END
@@ -1422,8 +1416,7 @@ BEGIN
 						ROLLBACK TRAN ;		
 					END
 
-					Select 'Se necesita realizar ajuste de IVA' As 'Respuesta',2 AS 'Estado', * From @TAjusteIVA
-					return 1
+					SET @ds_RespuestaJOB = 'Se necesita realizar ajuste de IVA';return 1
 				END
 			END 
 			BEGIN
@@ -1448,8 +1441,7 @@ BEGIN
 							END
 							SELECT @Estado = 1
 								 , @Msj = 'Error el Ajustar los valores del iva';
-							SELECT @Msj As 'Respuesta',
-									@Estado AS 'Estado' ;
+							SET @ds_RespuestaJOB = @Msj;
 							RETURN @retval;
 						END
 					END
@@ -1510,8 +1502,7 @@ BEGIN
 														 @admsg      = @procmsg	   ;	 
 						END 		  
 						
-						Select @procmsg As 'Respuesta',
-								1 AS 'Estado' ;
+						SET @ds_RespuestaJOB = @procmsg;
 						RETURN 1 ;
 					END 
 											
@@ -1528,7 +1519,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					Select 'Error actualizando la reserva' As 'Respuesta',@Estado AS 'Estado' ;
+					SET @ds_RespuestaJOB = 'Error actualizando la reserva';
 					RETURN @retval;
 				END
 				-----------------------------------------------------------------
@@ -1612,6 +1603,21 @@ BEGIN
 					LEFT JOIN dbo.resoluciones r ON r.id_sucursal = F.id_sucursal AND r.ds_num_resolucion = F.ds_num_resolucion
 				WHERE F.id = @NewFacId 	
 				/*fin rgelis 2012/10/11 req.10814*/
+
+				SELECT TOP 1 
+					@ds_RespuestaJOB = ISNULL('Factura Creada: '+F.cd_fuente+'-'+F.cd_serie+F.cd_consecutivo+'-'+CONVERT(VARCHAR(18),F.id), '') + 
+						CASE WHEN ISNULL(@MsjAlerta, '') <> '' THEN ' - Alerta: ' + @MsjAlerta ELSE '' END +
+						CASE WHEN ISNULL(
+							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' días para el vencimiento de la resolución' ELSE @Resolucionmsg END
+						, '') <> '' THEN ' - Res: ' + 
+							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' días para el vencimiento de la resolución' ELSE @Resolucionmsg END
+						ELSE '' END +
+						CASE WHEN ISNULL(RC.cd_fuente, '') <> '' THEN ' - Pago: ' + ISNULL(FP.ds_nombre, '') + ' ' + ISNULL(RC.cd_Fuente, '') + '-' + ISNULL(RC.cd_Serie, '') + '-' + ISNULL(RC.cd_Consecutivo, '') + ' (' + CASE RC.in_Tipo WHEN 1 THEN 'RC de Tiquetes' ELSE 'RC de otros Items' END + ') ' + ISNULL(CAST(RC.am_valor AS VARCHAR), '') ELSE '' END
+				FROM dbo.fac_factura As F
+					LEFT JOIN dbo.Fac_RecibosCaja As RC ON RC.id_fac_factura=F.id
+					LEFT JOIN dbo.FormasPago As FP ON FP.id=RC.id_FormaPago 
+					LEFT JOIN dbo.resoluciones r ON r.id_sucursal = F.id_sucursal AND r.ds_num_resolucion = F.ds_num_resolucion
+				WHERE F.id = @NewFacId;
 				
 				RETURN @retval;
 				
@@ -1641,7 +1647,8 @@ BEGIN
 													 			 @id_usuario = @id_usuario ,
 													 			 @cd_status  = 0           , 
 													 			 @admsg      = @msg	   ;														 			 		
-	   	        RETURN @retval;
+	   	        SET @ds_RespuestaJOB = @msg;
+				RETURN @retval;
 		    END
 		    
 		    -- Registro bloqueado / Conflicto de actualizacion
@@ -1671,7 +1678,7 @@ BEGIN
 							'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						 	'Estado: ' + isnull(CAST(ERROR_STATE()    AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
-							'Procedimiento: ' + isnull(ERROR_PROCEDURE(),'')					+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+							'Procedimiento: ' + 'spza_FacturaJOB_Crear'							+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							'Linea: ' + isnull(CAST(ERROR_LINE() 	   AS VARCHAR(10)),'')      + CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) ; 							
 	
 				--Se debe auditar proceso fallido
@@ -1679,8 +1686,9 @@ BEGIN
 										 			 			@id_usuario = @id_usuario ,
 										 			 			@cd_status  = 0           , 
 										 			 			@admsg      = @msg	  ;	
-				RAISERROR (@msg,16,126);
-				--SELECT @msg AS 'Respuesta', 1 AS 'Estado';
+				--RAISERROR (@msg,16,126);
+				--SET @ds_RespuestaJOB = @msg;
+				SET @ds_RespuestaJOB = @msg;
 				RETURN @retval;
 			END
 		END CATCH     
@@ -1695,10 +1703,12 @@ BEGIN
 											 			 @id_usuario = @id_usuario ,
 											 			 @cd_status  = 0           , 
 											 			 @admsg      = @msg	   ;												 	   					   
-  		RAISERROR (@msg,16,127);
-  		RETURN @retval;
+  		--RAISERROR (@msg,16,127);
+  		SET @ds_RespuestaJOB = @msg;
+		RETURN @retval;
   	END   	
     
     RETURN @retval;
 END
 GO
+

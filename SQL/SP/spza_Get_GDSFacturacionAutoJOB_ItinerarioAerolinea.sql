@@ -1,11 +1,11 @@
-IF OBJECT_ID('dbo.spza_Get_GDSFacturacionAut_ItinerarioAerolinea', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.spza_Get_GDSFacturacionAut_ItinerarioAerolinea;
+IF OBJECT_ID('dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea;
 GO
-CREATE PROCEDURE dbo.spza_Get_GDSFacturacionAut_ItinerarioAerolinea 
+CREATE PROCEDURE dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea 
 	-- Parametros del procedimiento
 	@id_usuario INT,
-	@cd_sucursal CHAR(5) = 'OFP',
-	@cd_implante CHAR(5) = NULL 
+	@cd_sucursal VARCHAR(MAX) = '',
+	@cd_implante VARCHAR(MAX) = '' 
 
  
 AS
@@ -86,7 +86,7 @@ BEGIN
 			FROM dbo.ReservasGDS As R
 			INNER JOIN dbo.ReservasGDS_FacAuto fpa ON fpa.id_reserva = r.id
 			INNER JOIN dbo.ReservaGDS_Detalles tkt ON tkt.id_reserva=R.id
-			WHERE tkt.bl_usada = 0 AND (fpa.cd_sucursal = @cd_sucursal OR @FiltrarSucursalFactAuto = 0)
+			WHERE tkt.bl_usada = 0 AND (EXISTS (SELECT 1 FROM dbo.fnSplitMejorado(@cd_sucursal, ',', 0, 1) s WHERE s.Codigo = fpa.cd_sucursal) OR ISNULL(@cd_sucursal,'')='' OR @FiltrarSucursalFactAuto = 0)
 
 			SELECT @MAXTablaReservas=COUNT(*),@I=1 FROM #TablaReservas
 
@@ -116,14 +116,29 @@ BEGIN
 				--Insetamos la parte inicial de los itinerarios
 				DELETE FROM @TableItinerario
 
-				INSERT INTO @TableItinerario (Itinerario)
-				EXEC dbo.SpSplitMejorado @ItinerarioInicio,'/'
+				DECLARE @Str VARCHAR(MAX), @Pos INT
+				SET @Str = @ItinerarioInicio
+				WHILE CHARINDEX('/', @Str) > 0
+				BEGIN
+					SET @Pos = CHARINDEX('/', @Str)
+					INSERT INTO @TableItinerario (Itinerario) VALUES (LTRIM(RTRIM(LEFT(@Str, @Pos - 1))))
+					SET @Str = SUBSTRING(@Str, @Pos + 1, LEN(@Str))
+				END
+				IF LEN(@Str) > 0
+					INSERT INTO @TableItinerario (Itinerario) VALUES (LTRIM(RTRIM(@Str)))
 			
 				--Insetamos la parte Final de los itinerarios
 				DELETE FROM @TableItinerarioFin
 		
-				INSERT INTO @TableItinerarioFin (itinerario)
-				EXEC dbo.SpSplitMejorado @ItinerarioFin,'/'
+				SET @Str = @ItinerarioFin
+				WHILE CHARINDEX('/', @Str) > 0
+				BEGIN
+					SET @Pos = CHARINDEX('/', @Str)
+					INSERT INTO @TableItinerarioFin (itinerario) VALUES (LTRIM(RTRIM(LEFT(@Str, @Pos - 1))))
+					SET @Str = SUBSTRING(@Str, @Pos + 1, LEN(@Str))
+				END
+				IF LEN(@Str) > 0
+					INSERT INTO @TableItinerarioFin (itinerario) VALUES (LTRIM(RTRIM(@Str)))
 			
 				--Actualizamos para que quede armado el itinerario
 				UPDATE t
