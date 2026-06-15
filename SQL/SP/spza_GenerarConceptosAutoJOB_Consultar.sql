@@ -1,5 +1,7 @@
-IF OBJECT_ID('dbo.spza_GenerarConceptosAutoJOB_Consultar', 'P') IS NOT NULL
+﻿IF OBJECT_ID('dbo.spza_GenerarConceptosAutoJOB_Consultar', 'P') IS NOT NULL
     DROP PROCEDURE dbo.spza_GenerarConceptosAutoJOB_Consultar;
+GO
+SET QUOTED_IDENTIFIER ON;
 GO
 CREATE PROCEDURE [dbo].[spza_GenerarConceptosAutoJOB_Consultar]
 	-- Parametros del procedimiento
@@ -64,7 +66,7 @@ BEGIN
 												  @bl_auditfail = @bl_af 	 OUTPUT ;
 			IF (@bl_permit = 0)
 			BEGIN 
-				SELECT 'No posee permisos suficientes para ejecutar esta acción.' AS 'Respuesta'
+				SELECT 'No posee permisos suficientes para ejecutar esta acciÃ³n.' AS 'Respuesta'
 				RETURN @retval;
 			END */
 
@@ -115,7 +117,7 @@ BEGIN
 			,am_tarifa MONEY
 			,am_total MONEY
 			,ColId VARCHAR(25) COLLATE DATABASE_DEFAULT
-			,cd_Consecutivo_depende VARCHAR(12) COLLATE DATABASE_DEFAULT
+			,cd_Consecutivo_depende VARCHAR(50) COLLATE DATABASE_DEFAULT
 			,am_ValorComision MONEY
 			,am_ImpuestoComision MONEY
 			,am_totalfactura MONEY
@@ -133,11 +135,26 @@ BEGIN
 			,id_FormasPago INT 
 			,cd_TarjetasCredito VARCHAR(4) COLLATE DATABASE_DEFAULT --fin rgelis 2018/05/07 req.58559
 			,iden_gds INT
+			,cd_codigotc VARCHAR(2) COLLATE DATABASE_DEFAULT
+			,ds_numerotc VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,ds_vencetc VARCHAR(5) COLLATE DATABASE_DEFAULT
+			,ds_autorizaciontc VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,ds_vouchertc VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,in_cuotastc INT
+			,id_FormasPagoTAO INT 
+			,cd_codigotcTAO VARCHAR(2) COLLATE DATABASE_DEFAULT
+			,ds_numerotcTAO VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,ds_vencetcTAO VARCHAR(5) COLLATE DATABASE_DEFAULT
+			,ds_autorizaciontcTAO VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,ds_vouchertcTAO VARCHAR(25) COLLATE DATABASE_DEFAULT
+			,in_cuotastcTAO INT 
 			)
 			
 			DECLARE @ExecSQL VARCHAR(MAX) = 'INSERT INTO #Concepto ' + @ZML_DatosXML;
 			EXEC(@ExecSQL);
-
+			--select * from #Concepto
+			--RETURN 1
+			
 			-- Loop variables
 			DECLARE @cur_cd_cliente VARCHAR(25),
 					@cur_id_conceptofacturacion INT,
@@ -159,7 +176,24 @@ BEGIN
 					@cur_id_implante INT,
 					@cur_id_FormasPago INT,
 					@cur_cd_TarjetasCredito VARCHAR(4),
-					@cur_iden_gds INT;
+					@cur_id_TarjetasCredito INT,
+					@cur_iden_gds INT,
+					@cur_ColId VARCHAR(25),
+					@cur_cd_Consecutivo_depende VARCHAR(50),
+					@cur_cd_codigotc VARCHAR(2), 
+					@cur_ds_numerotc VARCHAR(25),
+					@cur_ds_vencetc VARCHAR(5),
+					@cur_ds_autorizaciontc VARCHAR(25), 
+					@cur_ds_vouchertc VARCHAR(25), 
+					@cur_in_cuotastc INT,
+					@cur_id_FormasPagoTAO INT,
+					@cur_id_TarjetasCreditoTAO INT,
+					@cur_cd_codigotcTAO VARCHAR(2),
+					@cur_ds_numerotcTAO VARCHAR(25),
+					@cur_ds_vencetcTAO VARCHAR(5),
+					@cur_ds_autorizaciontcTAO VARCHAR(25),
+					@cur_ds_vouchertcTAO VARCHAR(25),
+					@cur_in_cuotastcTAO INT
 
 			DECLARE @cur_id_reserva_int INT;
 
@@ -186,12 +220,29 @@ BEGIN
 			,id_FormasPago INT 
 			,cd_TarjetasCredito VARCHAR(4)
 			,iden_gds INT
+			,ColId VARCHAR(25)
+			,cd_Consecutivo_depende VARCHAR(50)
+			,cd_codigotc VARCHAR(2) 
+			,ds_numerotc VARCHAR(25)
+			,ds_vencetc VARCHAR(5)
+			,ds_autorizaciontc VARCHAR(25) 
+			,ds_vouchertc VARCHAR(25) 
+			,in_cuotastc INT
+			,id_FormasPagoTAO INT
+			,cd_codigotcTAO VARCHAR(2)
+			,ds_numerotcTAO VARCHAR(25)
+			,ds_vencetcTAO VARCHAR(5)
+			,ds_autorizaciontcTAO VARCHAR(25)
+			,ds_vouchertcTAO VARCHAR(25)
+			,in_cuotastcTAO INT
 			)
 
-			INSERT INTO @OriginalConcepto (cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds)
-			SELECT cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds
+			INSERT INTO @OriginalConcepto (cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds, ColId, cd_Consecutivo_depende, cd_codigotc, ds_numerotc, ds_vencetc, ds_autorizaciontc, ds_vouchertc, in_cuotastc, id_FormasPagoTAO, cd_codigotcTAO, ds_numerotcTAO, ds_vencetcTAO, ds_autorizaciontcTAO, ds_vouchertcTAO, in_cuotastcTAO)
+			SELECT cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds, ColId, cd_Consecutivo_depende, cd_codigotc, ds_numerotc, ds_vencetc, ds_autorizaciontc, ds_vouchertc, in_cuotastc, id_FormasPagoTAO, cd_codigotcTAO, ds_numerotcTAO, ds_vencetcTAO, ds_autorizaciontcTAO, ds_vouchertcTAO, in_cuotastcTAO 
 			FROM #Concepto
-
+			
+			--select * from @OriginalConcepto
+			--return 1
 			-- 1. Construir @ListaReservas
 			DECLARE @ListaReservas VARCHAR(MAX) = '';
 			SELECT @ListaReservas = @ListaReservas + CAST(id_reserva AS VARCHAR) + ',' 
@@ -208,19 +259,19 @@ BEGIN
 			
 			IF OBJECT_ID('tempdb..#FeesJob') IS NOT NULL DROP TABLE #FeesJob;
 			CREATE TABLE #FeesJob (id_reserva INT, cd_tiquete VARCHAR(50), in_orden INT, cd_conceptofac VARCHAR(50), cd_subcodigo VARCHAR(50), am_valor MONEY, ds_servicio VARCHAR(200));
-
-			IF @ListaReservas <> ''
-			BEGIN
-				INSERT INTO #ItinerariosJob EXEC dbo.spza_ReservasGDSJOB_Itinerario @id_reservas = @ListaReservas;
+																																
+			IF ISNULL(@ListaReservas,'') <> ''
+			BEGIN 
+				INSERT INTO #ItinerariosJob EXEC dbo.spza_ReservasGDSJOB_Itinerario @id_reserva = @ListaReservas;
 				INSERT INTO #FeesJob EXEC dbo.spza_ReservasGDS_FEEJOB_Consultar @Id_Reservas = @ListaReservas;
 			END
-
+			
 			DECLARE cur_conceptos CURSOR LOCAL FAST_FORWARD FOR
-			SELECT cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds
+			SELECT cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion, cd_tiquete, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item, CodigoReserva, id_sucursal, id_implante, id_FormasPago, cd_TarjetasCredito, iden_gds, ColId, cd_Consecutivo_depende, cd_codigotc, ds_numerotc, ds_vencetc, ds_autorizaciontc, ds_vouchertc, in_cuotastc, id_FormasPagoTAO, cd_codigotcTAO, ds_numerotcTAO, ds_vencetcTAO, ds_autorizaciontcTAO, ds_vouchertcTAO, in_cuotastcTAO 
 			FROM @OriginalConcepto
 
 			OPEN cur_conceptos
-			FETCH NEXT FROM cur_conceptos INTO @cur_cd_cliente, @cur_id_conceptofacturacion, @cur_in_nacionalidad, @cur_id_aerolinea, @cur_id_moneda, @cur_ds_paxname, @cur_ds_paxape, @cur_cd_paxtype, @cur_ds_paxClasificacion, @cur_cd_tiquete, @cur_dt_llegada, @cur_dt_salida, @cur_cd_cencosto, @cur_cd_auxiliar, @cur_cd_item, @cur_CodigoReserva, @cur_id_sucursal, @cur_id_implante, @cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds
+			FETCH NEXT FROM cur_conceptos INTO @cur_cd_cliente, @cur_id_conceptofacturacion, @cur_in_nacionalidad, @cur_id_aerolinea, @cur_id_moneda, @cur_ds_paxname, @cur_ds_paxape, @cur_cd_paxtype, @cur_ds_paxClasificacion, @cur_cd_tiquete, @cur_dt_llegada, @cur_dt_salida, @cur_cd_cencosto, @cur_cd_auxiliar, @cur_cd_item, @cur_CodigoReserva, @cur_id_sucursal, @cur_id_implante, @cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds, @cur_ColId, @cur_cd_Consecutivo_depende, @cur_cd_codigotc, @cur_ds_numerotc, @cur_ds_vencetc, @cur_ds_autorizaciontc, @cur_ds_vouchertc, @cur_in_cuotastc, @cur_id_FormasPagoTAO, @cur_cd_codigotcTAO, @cur_ds_numerotcTAO, @cur_ds_vencetcTAO, @cur_ds_autorizaciontcTAO, @cur_ds_vouchertcTAO, @cur_in_cuotastcTAO
 
 			WHILE @@FETCH_STATUS = 0
 			BEGIN
@@ -273,50 +324,118 @@ BEGIN
 						FROM #FeesJob WHERE id_reserva = @cur_id_reserva_int 
 						AND (cd_tiquete = @cur_cd_tiquete OR cd_tiquete = CASE WHEN LEN(@cur_cd_tiquete)>=13 THEN RIGHT(@cur_cd_tiquete,LEN(@cur_cd_tiquete)-3) ELSE @cur_cd_tiquete END);
 
-						INSERT INTO #Concepto (
-							cd_cliente, id_conceptofacturacion, id_tiposservicios, in_nacionalidad,
-							id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion,
-							cd_tiquete, cd_proveedores, dt_llegada, dt_salida, cd_cencosto, cd_auxiliar, cd_item,
-							CodigoReserva, am_tarifa, am_total, ColId, cd_Consecutivo_depende,
-							am_ValorComision, am_ImpuestoComision, am_totalfactura, cd_tourcode,
-							am_Contado, am_Credito, cd_tktrevisado, id_TiposDocumento, cd_Penalidad,
-							cd_TipoTiqueteGDS, am_TasaCambio, ds_itinerario, id_sucursal, id_implante,
-							id_FormasPago, cd_TarjetasCredito, iden_gds
+						SELECT @cur_id_TarjetasCredito = id FROM dbo.TarjetasCredito WHERE cd_codigo=@cur_cd_TarjetasCredito
+						SELECT @cur_id_TarjetasCreditoTAO = id FROM dbo.TarjetasCredito WHERE cd_codigo=@cur_cd_codigotcTAO
+
+						INSERT INTO #GenerarConceptosAuto (
+							id_ConceptoFacturacion,
+							cd_ConceptoFacturacion,
+							ds_ConceptoFacturacion,
+							id_TiposConceptFac,
+							bl_contorlarCargImp,
+							bl_CalculoAutoValoresFacturacion,
+							id_TiposServicio,
+							cd_TiposServicio,
+							ds_TiposServicio,
+							cd_proveedores,
+							ds_proveedores,
+							cd_tiquete,
+							ds_servicio,
+							ds_descrip,
+							ds_paxname,
+							ds_paxape,
+							cd_paxtype,
+							ds_paxClasificacion,
+							in_nacionalidad,
+							dt_llegada,
+							dt_salida,
+							cd_cencosto,
+							cd_auxiliar,
+							cd_item,
+							Valor,
+							am_Contado,
+							am_Credito,
+							ColId,
+							cd_Consecutivo_depende,
+							CodigoReserva,
+							am_ImpuestoComision,
+							Respuesta,
+							bl_RutaExentaIva,
+							id_FormasPago,
+							id_TarjetasCredito,
+							am_basedescuento,
+							am_pordescuento,
+							id_FormasPagoAirPlus,
+							cd_FormasPagoAirPlus,
+							ds_FormasPagoAirPlus,
+							id_TarjetasCreditoAirPlus,
+							cd_TarjetasCreditoAirPlus,
+							ds_numerotarjetaAirPlus,
+							cd_codigotc, 
+							ds_numerotc,
+							ds_vencetc, 
+							ds_autorizaciontc,
+							ds_vouchertc, 
+							in_cuotastc 
 						)
 						SELECT 
-							@cur_cd_cliente,
-							CASE WHEN cd_conceptofac = 'CAN' THEN 4
-								 WHEN cd_conceptofac = 'CAI' THEN 5
-								 ELSE 3 END,
-							NULL,
-							@cur_in_nacionalidad,
-							@cur_id_aerolinea,
-							@cur_id_moneda,
-							@cur_ds_paxname,
-							@cur_ds_paxape,
-							@cur_cd_paxtype,
-							@cur_ds_paxClasificacion,
-							cd_tiquete,
-							NULL,
-							@cur_dt_llegada,
-							@cur_dt_salida,
-							@cur_cd_cencosto,
-							@cur_cd_auxiliar,
-							@cur_cd_item,
-							@cur_CodigoReserva,
-							am_valor,
-							am_valor,
-							NULL,
-							@cur_cd_tiquete,
-							0, 0, am_valor, NULL,
-							0, 0, NULL, NULL, NULL,
-							NULL, 1.0, NULL, @cur_id_sucursal, @cur_id_implante,
-							@cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds
-						FROM @FeeTable
+							id_ConceptoFacturacion=C.id,
+							cd_ConceptoFacturacion=C.cd_codigo,
+							ds_ConceptoFacturacion=C.ds_nombre,
+							id_TiposConceptFac=C.id_TiposConceptoFacturacion,
+							bl_contorlarCargImp=C.bl_contorlarCargImp,
+							bl_CalculoAutoValoresFacturacion=C.bl_CalculoAutoValoresFacturacion,
+							id_TiposServicio=TS.id,
+							cd_TiposServicio=TS.cd_codigo,
+							ds_TiposServicio=TS.ds_nombre,
+							cd_proveedores='',
+							ds_proveedores='',
+							cd_tiquete=F.cd_tiquete,
+							ds_servicio=F.ds_servicio,
+							ds_descrip=F.ds_servicio,
+							ds_paxname=@cur_ds_paxname,
+							ds_paxape=@cur_ds_paxape,
+							cd_paxtype=@cur_cd_paxtype,
+							ds_paxClasificacion=@cur_ds_paxClasificacion,
+							in_nacionalidad=@cur_in_nacionalidad,
+							dt_llegada=@cur_dt_llegada,
+							dt_salida=@cur_dt_salida,
+							cd_cencosto=@cur_cd_cencosto,
+							cd_auxiliar=@cur_cd_auxiliar,
+							cd_item=@cur_cd_item,
+							Valor=F.am_valor,
+							am_Contado=CASE WHEN ISNULL(@cur_id_FormasPago,0)<>2 THEN F.am_valor ELSE 0 END,
+							am_Credito=CASE WHEN ISNULL(@cur_id_FormasPago,0)=2 THEN F.am_valor ELSE 0 END,
+							ColId=@cur_ColId,
+							cd_Consecutivo_depende=@cur_cd_Consecutivo_depende,
+							CodigoReserva=@cur_CodigoReserva,
+							am_ImpuestoComision=0,
+							Respuesta='',
+							bl_RutaExentaIva=0,
+							id_FormasPago=@cur_id_FormasPago,
+							id_TarjetasCredito=@cur_id_TarjetasCredito,
+							am_basedescuento=0,
+							am_pordescuento=0,
+							id_FormasPagoAirPlus=NULL,
+							cd_FormasPagoAirPlus='',
+							ds_FormasPagoAirPlus='',
+							id_TarjetasCreditoAirPlus=NULL,
+							cd_TarjetasCreditoAirPlus='',
+							ds_numerotarjetaAirPlus='',
+							cd_codigotc=@cur_cd_codigotc, 
+							ds_numerotc=@cur_ds_numerotc,
+							ds_vencetc=@cur_ds_vencetc, 
+							ds_autorizaciontc=@cur_ds_autorizaciontc,
+							ds_vouchertc=@cur_ds_vouchertc, 
+							in_cuotastc=@cur_in_cuotastc
+						FROM @FeeTable F
+						INNER JOIN dbo.ConceptoFacturacion C ON C.cd_codigo = F.cd_conceptofac
+						LEFT JOIN dbo.TiposServicios TS ON TS.cd_codigo = F.cd_subcodigo
 
 						-- Auto-TAO Configuration
 						DECLARE @AUTOTAO CHAR(1) = (SELECT LTRIM(RTRIM(Valor)) FROM dbo.Parametros WHERE id = 192);
 						DECLARE @AUTOTAOAMADEUS CHAR(1) = (SELECT LTRIM(RTRIM(Valor)) FROM dbo.Parametros WHERE id = 213);
+						
 						DECLARE @ValorTAO MONEY = 0;
 						
 						-- Validar si el cliente tiene config especial
@@ -324,11 +443,11 @@ BEGIN
 						SELECT TOP 1 @bl_TAO = ISNULL(bl_TAO,0), @am_TarifaOneWay = am_TarifaOneWay, @am_TarifaRoundTrip = am_TarifaRoundTrip, @am_Tarifa_USD300 = am_Tarifa_USD300, @am_Tarifa_USD300_USD500 = am_Tarifa_USD300_USD500, @am_Tarifa_USD500_USD800 = am_Tarifa_USD500_USD800, @am_Tarifa_USD800 = am_Tarifa_USD800
 						FROM dbo.Configuracion_remisiones WHERE id_cliente = @cur_cd_cliente;
 
-						IF @bl_TAO = 1 OR (@AUTOTAO = 'S' AND (@AUTOTAOAMADEUS = 'N' OR (@AUTOTAOAMADEUS = 'S' AND @cur_iden_gds = 2)))
+						IF @bl_TAO = 1 OR @AUTOTAO = 'S' OR (@AUTOTAOAMADEUS = 'S' AND @cur_iden_gds = 2)
 						BEGIN
 							IF ISNULL(@bl_TAO, 0) = 0
 							BEGIN
-								-- Cargar de parámetros generales
+								-- Cargar de parametros generales
 								SELECT @am_TarifaOneWay = CAST(Valor AS MONEY) FROM dbo.Parametros WHERE id = 61;
 								SELECT @am_TarifaRoundTrip = CAST(Valor AS MONEY) FROM dbo.Parametros WHERE id = 62;
 								SELECT @am_Tarifa_USD300 = CAST(Valor AS MONEY) FROM dbo.Parametros WHERE id = 67;
@@ -348,7 +467,7 @@ BEGIN
 							END
 							ELSE
 							BEGIN
-								-- Convertir a USD si aplica, aquí usamos la tarifa base por simplicidad
+								-- Convertir a USD si aplica, aquÃ­ usamos la tarifa base por simplicidad
 								DECLARE @TarifaUSD MONEY = ISNULL(@tarifa_base, 0); 
 								IF @TarifaUSD <= 300 SET @ValorTAO = @am_Tarifa_USD300;
 								ELSE IF @TarifaUSD <= 500 SET @ValorTAO = @am_Tarifa_USD300_USD500;
@@ -358,20 +477,113 @@ BEGIN
 
 							IF ISNULL(@ValorTAO, 0) > 0
 							BEGIN
-								INSERT INTO #Concepto (
-									cd_cliente, id_conceptofacturacion, in_nacionalidad, id_aerolinea, id_moneda,
-									cd_tiquete, am_tarifa, am_total, am_Contado, cd_Consecutivo_depende, ds_itinerario,
-									CodigoReserva, iden_gds
-								) VALUES (
-									@cur_cd_cliente, 4, @cur_in_nacionalidad, @cur_id_aerolinea, @cur_id_moneda,
-									@cur_cd_tiquete, @ValorTAO, @ValorTAO, @ValorTAO, @cur_cd_tiquete, @ds_itinerario,
-									@cur_CodigoReserva, @cur_iden_gds
-								);
+								INSERT INTO #GenerarConceptosAuto (
+										id_ConceptoFacturacion,
+										cd_ConceptoFacturacion,
+										ds_ConceptoFacturacion,
+										id_TiposConceptFac,
+										bl_contorlarCargImp,
+										bl_CalculoAutoValoresFacturacion,
+										id_TiposServicio,
+										cd_TiposServicio,
+										ds_TiposServicio,
+										cd_proveedores,
+										ds_proveedores,
+										cd_tiquete,
+										ds_servicio,
+										ds_descrip,
+										ds_paxname,
+										ds_paxape,
+										cd_paxtype,
+										ds_paxClasificacion,
+										in_nacionalidad,
+										dt_llegada,
+										dt_salida,
+										cd_cencosto,
+										cd_auxiliar,
+										cd_item,
+										Valor,
+										am_Contado,
+										am_Credito,
+										ColId,
+										cd_Consecutivo_depende,
+										CodigoReserva,
+										am_ImpuestoComision,
+										Respuesta,
+										bl_RutaExentaIva,
+										id_FormasPago,
+										id_TarjetasCredito,
+										am_basedescuento,
+										am_pordescuento,
+										id_FormasPagoAirPlus,
+										cd_FormasPagoAirPlus,
+										ds_FormasPagoAirPlus,
+										id_TarjetasCreditoAirPlus,
+										cd_TarjetasCreditoAirPlus,
+										ds_numerotarjetaAirPlus,
+										cd_codigotc, 
+										ds_numerotc,
+										ds_vencetc, 
+										ds_autorizaciontc,
+										ds_vouchertc, 
+										in_cuotastc
+								)
+								SELECT
+										id_ConceptoFacturacion=@cur_in_nacionalidad+3,
+										cd_ConceptoFacturacion=CASE WHEN @cur_in_nacionalidad=2 THEN 'CAI' ELSE 'CAN' END,
+										ds_ConceptoFacturacion='Tarifa Adminstrativa '+CASE WHEN @cur_in_nacionalidad=2 THEN 'Internacional' ELSE 'Nacional' END,
+										id_TiposConceptFac=3,
+										bl_contorlarCargImp=0,
+										bl_CalculoAutoValoresFacturacion=0,
+										id_TiposServicio=NULL,
+										cd_TiposServicio='',
+										ds_TiposServicio='',
+										cd_proveedores='',
+										ds_proveedores='',
+										cd_tiquete=@cur_cd_tiquete,
+										ds_servicio='Tarifa Adminstrativa '+CASE WHEN @cur_in_nacionalidad=2 THEN 'Internacional' ELSE 'Nacional' END + ' Tiquete: ' + ISNULL(@cur_cd_tiquete,''),
+										ds_descrip='Tarifa Adminstrativa '+CASE WHEN @cur_in_nacionalidad=2 THEN 'Internacional' ELSE 'Nacional' END + ' Tiquete: ' + ISNULL(@cur_cd_tiquete,''),
+										ds_paxname=@cur_ds_paxname,
+										ds_paxape=@cur_ds_paxape,
+										cd_paxtype=@cur_cd_paxtype,
+										ds_paxClasificacion=@cur_ds_paxClasificacion,
+										in_nacionalidad=@cur_in_nacionalidad,
+										dt_llegada=@cur_dt_llegada,
+										dt_salida=@cur_dt_salida,
+										cd_cencosto=@cur_cd_cencosto,
+										cd_auxiliar=@cur_cd_auxiliar,
+										cd_item=@cur_cd_item,
+										Valor=@ValorTAO,
+										am_Contado=CASE WHEN (CASE WHEN ISNULL(@cur_id_FormasPagoTAO,0)<>0 THEN ISNULL(@cur_id_FormasPagoTAO,0) ELSE ISNULL(@cur_id_FormasPago,0) END)<>2 THEN @ValorTAO ELSE 0 END,
+										am_Credito=CASE WHEN (CASE WHEN ISNULL(@cur_id_FormasPagoTAO,0)<>0 THEN ISNULL(@cur_id_FormasPagoTAO,0) ELSE ISNULL(@cur_id_FormasPago,0) END)=2 THEN @ValorTAO ELSE 0 END,
+										ColId=@cur_ColId,
+										cd_Consecutivo_depende=@cur_cd_Consecutivo_depende,
+										CodigoReserva=@cur_CodigoReserva,
+										am_ImpuestoComision=0,
+										Respuesta='',
+										bl_RutaExentaIva=0,
+										id_FormasPago=CASE WHEN ISNULL(@cur_id_FormasPagoTAO,0)<>0 THEN @cur_id_FormasPagoTAO ELSE @cur_id_FormasPago END,
+										id_TarjetasCredito=CASE WHEN ISNULL(@cur_id_TarjetasCreditoTAO,0)<>0 THEN @cur_id_TarjetasCreditoTAO ELSE @cur_id_TarjetasCredito END,
+										am_basedescuento=0,
+										am_pordescuento=0,
+										id_FormasPagoAirPlus=NULL,
+										cd_FormasPagoAirPlus='',
+										ds_FormasPagoAirPlus='',
+										id_TarjetasCreditoAirPlus=NULL,
+										cd_TarjetasCreditoAirPlus='',
+										ds_numerotarjetaAirPlus='',
+										cd_codigotc=CASE WHEN ISNULL(@cur_cd_codigotcTAO,'')<>'' THEN @cur_cd_codigotcTAO ELSE @cur_cd_codigotc END, 
+										ds_numerotc=CASE WHEN ISNULL(@cur_ds_numerotcTAO,'')<>'' THEN @cur_ds_numerotcTAO ELSE @cur_ds_numerotc END,
+										ds_vencetc=CASE WHEN ISNULL(@cur_ds_vencetcTAO,'')<>'' THEN @cur_ds_vencetcTAO ELSE @cur_ds_vencetc END, 
+										ds_autorizaciontc=CASE WHEN ISNULL(@cur_ds_autorizaciontcTAO,'')<>'' THEN @cur_ds_autorizaciontcTAO ELSE @cur_ds_autorizaciontc END,
+										ds_vouchertc=CASE WHEN ISNULL(@cur_ds_vouchertcTAO,'')<>'' THEN @cur_ds_vouchertcTAO ELSE @cur_ds_vouchertc END, 
+										in_cuotastc=CASE WHEN ISNULL(@cur_in_cuotastcTAO,0)<>0 THEN @cur_in_cuotastcTAO ELSE @cur_in_cuotastc END
 							END
 						END
 					END
-
+					
 					-- 3. Consultar servicios adicionales de la tabla ReservaGDS_Servicios
+					/*
 					INSERT INTO #Concepto (
 						cd_cliente, id_conceptofacturacion, id_tiposservicios, in_nacionalidad,
 						id_aerolinea, id_moneda, ds_paxname, ds_paxape, cd_paxtype, ds_paxClasificacion,
@@ -405,7 +617,7 @@ BEGIN
 						@cur_CodigoReserva,
 						am_tarifa,
 						am_tarifa + ISNULL(am_iva, 0),
-						NULL,
+						CAST(id AS VARCHAR(25)),
 						@cur_cd_tiquete,
 						ISNULL(am_Comision, 0), 0, am_tarifa + ISNULL(am_iva, 0), NULL,
 						ISNULL(am_TarifaContado, 0) + ISNULL(am_IvaContado, 0) + ISNULL(am_OtrosContado, 0),
@@ -415,12 +627,13 @@ BEGIN
 						@cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds
 					FROM dbo.ReservaGDS_Servicios
 					WHERE id_reserva = @cur_id_reserva_int AND ISNULL(bl_anulado, 0) = 0
+					*/
 				END
 
 				IF @@ERROR <> 0
 					BREAK
 
-				FETCH NEXT FROM cur_conceptos INTO @cur_cd_cliente, @cur_id_conceptofacturacion, @cur_in_nacionalidad, @cur_id_aerolinea, @cur_id_moneda, @cur_ds_paxname, @cur_ds_paxape, @cur_cd_paxtype, @cur_ds_paxClasificacion, @cur_cd_tiquete, @cur_dt_llegada, @cur_dt_salida, @cur_cd_cencosto, @cur_cd_auxiliar, @cur_cd_item, @cur_CodigoReserva, @cur_id_sucursal, @cur_id_implante, @cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds
+				FETCH NEXT FROM cur_conceptos INTO @cur_cd_cliente, @cur_id_conceptofacturacion, @cur_in_nacionalidad, @cur_id_aerolinea, @cur_id_moneda, @cur_ds_paxname, @cur_ds_paxape, @cur_cd_paxtype, @cur_ds_paxClasificacion, @cur_cd_tiquete, @cur_dt_llegada, @cur_dt_salida, @cur_cd_cencosto, @cur_cd_auxiliar, @cur_cd_item, @cur_CodigoReserva, @cur_id_sucursal, @cur_id_implante, @cur_id_FormasPago, @cur_cd_TarjetasCredito, @cur_iden_gds, @cur_ColId, @cur_cd_Consecutivo_depende, @cur_cd_codigotc, @cur_ds_numerotc, @cur_ds_vencetc, @cur_ds_autorizaciontc, @cur_ds_vouchertc, @cur_in_cuotastc, @cur_id_FormasPagoTAO, @cur_cd_codigotcTAO, @cur_ds_numerotcTAO, @cur_ds_vencetcTAO, @cur_ds_autorizaciontcTAO, @cur_ds_vouchertcTAO, @cur_in_cuotastcTAO
 			END
 			CLOSE cur_conceptos
 			DEALLOCATE cur_conceptos
@@ -456,6 +669,12 @@ BEGIN
             ,id_TarjetasCreditoAirPlus
             ,cd_TarjetasCreditoAirPlus
             ,ds_numerotarjetaAirPlus
+			,cd_codigotc 
+			,ds_numerotc
+			,ds_vencetc 
+			,ds_autorizaciontc
+			,ds_vouchertc 
+			,in_cuotastc
 			From(
 				SELECT id_ConceptoFacturacion
 					  ,cd_ConceptoFacturacion
@@ -508,6 +727,12 @@ BEGIN
 					  ,id_TarjetasCreditoAirPlus
 					  ,cd_TarjetasCreditoAirPlus
 					  ,ds_numerotarjetaAirPlus
+					  ,cd_codigotc 
+					  ,ds_numerotc
+					  ,ds_vencetc 
+					  ,ds_autorizaciontc
+					  ,ds_vouchertc 
+					  ,in_cuotastc
 				FROM(
 					SELECT	cfa.id As 'id_ConceptoFacturacion',
 							cfa.cd_codigo As 'cd_ConceptoFacturacion',
@@ -586,7 +811,13 @@ BEGIN
 							cd_TarjetasCreditoAirPlus = CASE WHEN FPTAO.Id IS NOT NULL AND tctao.id IS NOT NULL Then tctao.cd_codigo
 															 WHEN tcA.Id IS NOT NULL AND cap.id IS NOT NULL Then tcap.cd_codigo ELSE NULL END,
 							ds_numerotarjetaAirPlus = CASE WHEN FPTAO.Id IS NOT NULL AND tctao.id IS NOT NULL Then tkt.cd_NumeroTarjetaTAO
-														   WHEN tcA.Id IS NOT NULL AND cap.id IS NOT NULL Then cap.ds_numerotarjeta ELSE NULL END
+														   WHEN tcA.Id IS NOT NULL AND cap.id IS NOT NULL Then cap.ds_numerotarjeta ELSE NULL END,
+							cd_codigotc = cf.cd_codigotc,
+							ds_numerotc = cf.ds_numerotc,
+							ds_vencetc = cf.ds_vencetc,
+							ds_autorizaciontc = cf.ds_autorizaciontc,
+							ds_vouchertc = cf.ds_vouchertc, 
+							in_cuotastc = cf.in_cuotastc
 					FROM dbo.ConfiguracionConceptosAutoClientes c
 					INNER JOIN #Concepto cf ON (
 												(
@@ -739,7 +970,13 @@ BEGIN
 							FPTAO.ds_nombre,
 							tctao.id,
 							tctao.cd_codigo,
-							tkt.cd_NumeroTarjetaTAO
+							tkt.cd_NumeroTarjetaTAO,
+							cf.cd_codigotc,
+							cf.ds_numerotc,
+							cf.ds_vencetc,
+							cf.ds_autorizaciontc,
+							cf.ds_vouchertc, 
+							cf.in_cuotastc
 				) AS C
 			 ) AS F			
 			--------------------------------------------------------------------------
@@ -789,7 +1026,7 @@ BEGIN
 				IF (XACT_STATE() <> 0)
 	   	        BEGIN 				
 					SET @retval = 1;
-  	 				SET @msg =	'Ha ocurrido un error. Información para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+  	 				SET @msg =	'Ha ocurrido un error. InformaciÃ³n para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							    'Numero: ' + isnull(CAST(ERROR_NUMBER()   AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 								'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +

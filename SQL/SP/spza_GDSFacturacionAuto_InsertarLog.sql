@@ -1,4 +1,4 @@
-IF OBJECT_ID('dbo.spza_GDSFacturacionAuto_InsertarLog', 'P') IS NOT NULL
+﻿IF OBJECT_ID('dbo.spza_GDSFacturacionAuto_InsertarLog', 'P') IS NOT NULL
     DROP PROCEDURE dbo.spza_GDSFacturacionAuto_InsertarLog;
 GO
 CREATE PROCEDURE [dbo].[spza_GDSFacturacionAuto_InsertarLog] 
@@ -64,7 +64,7 @@ BEGIN
 												  @bl_auditfail = @bl_af 	 OUTPUT ;
 			IF (@bl_permit = 0)
 			BEGIN 
-				SELECT 'No posee permisos suficientes para ejecutar esta acción.' AS 'Respuesta'
+				SELECT 'No posee permisos suficientes para ejecutar esta acciÃ³n.' AS 'Respuesta'
 				RETURN @retval;
 			END 
 			
@@ -224,7 +224,7 @@ BEGIN
 	   	        END
 													
 				SET @retval = 1;
- 				SET @msg =	'Ha ocurrido un error. Información para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+ 				SET @msg =	'Ha ocurrido un error. InformaciÃ³n para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						    'Numero: ' + isnull(CAST(ERROR_NUMBER()   AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +

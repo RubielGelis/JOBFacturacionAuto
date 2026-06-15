@@ -1,7 +1,8 @@
-IF OBJECT_ID('dbo.spza_FacturaJOB_Crear', 'P') IS NOT NULL
+﻿IF OBJECT_ID('dbo.spza_FacturaJOB_Crear', 'P') IS NOT NULL
     DROP PROCEDURE dbo.spza_FacturaJOB_Crear;
 GO
-
+SET QUOTED_IDENTIFIER ON;
+GO
 CREATE PROCEDURE [dbo].[spza_FacturaJOB_Crear]
 	-- Parametros del procedimiento		
 	@id_usuario						INT,  
@@ -151,7 +152,7 @@ BEGIN
 												  @bl_auditfail = @bl_af 	 OUTPUT ;
 			IF (@bl_permit = 0)
 			BEGIN 
-				SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acción.';SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acción.';
+				SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acciÃ³n.';SET @ds_RespuestaJOB = 'No posee permisos suficientes para ejecutar esta acciÃ³n.';
 				RETURN @retval;
 			END 
 			
@@ -345,7 +346,7 @@ BEGIN
 				  de identificacion.*/
 				DECLARE @cd_serie_NCF VARCHAR(2)
 				SET @cd_serie_NCF = @cd_serie
-				IF EXISTS(SELECT * FROM dbo.Parametros WHERE Parametros.Id = 240 AND Parametros.Valor = 'República Dominicana')
+				IF EXISTS(SELECT * FROM dbo.Parametros WHERE Parametros.Id = 240 AND Parametros.Valor = 'RepÃºblica Dominicana')
 				BEGIN
 					SELECT @cd_serie_NCF = @cd_CF_TipoComprobante
 				END 
@@ -376,7 +377,7 @@ BEGIN
 
 				IF (@ErrorNCF <> 0 Or @@Error <> 0) -- Proceso de incremento de consecutivo fallido				
 				BEGIN 
-					Set @procmsg = 'Error en generación de Número de Comprobante Fiscal'
+					Set @procmsg = 'Error en generaciÃ³n de NÃºmero de Comprobante Fiscal'
 					IF @@TRANCOUNT > 0 
 					BEGIN 
 						ROLLBACK TRAN;	
@@ -423,10 +424,10 @@ BEGIN
 				--	IF @@TRANCOUNT > 0 
 				--	BEGIN 
 				--	END					
-				--	SELECT 	'El Cliente excedió su Cupo Crédito.' + space(40) + CHAR(10) + CHAR(13) + 
+				--	SELECT 	'El Cliente excediÃ³ su Cupo CrÃ©dito.' + space(40) + CHAR(10) + CHAR(13) + 
 				--		   	'Saldo: ' + convert(VARCHAR,@TotalSacCliente,1) + CHAR(10) + CHAR(13) +
-				--		   	'Total Crédito Factura: ' + convert(VARCHAR,@TotalFactura,1) + CHAR(10) + CHAR(13) +
-				--		   	'Cupo Crédito: ' + convert(VARCHAR,@TotalCupoCreditoCliente,1) + CHAR(10) + CHAR(13) 
+				--		   	'Total CrÃ©dito Factura: ' + convert(VARCHAR,@TotalFactura,1) + CHAR(10) + CHAR(13) +
+				--		   	'Cupo CrÃ©dito: ' + convert(VARCHAR,@TotalCupoCreditoCliente,1) + CHAR(10) + CHAR(13) 
 				--		    'Respuesta',
 				--			1 AS 'Estado' ;
 				--	RETURN 1 ;
@@ -447,7 +448,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END					
-					SELECT 	'Ha sobrepasado el presupuesto de la licitación.' + space(40) + CHAR(10) + CHAR(13) + 
+					SELECT 	'Ha sobrepasado el presupuesto de la licitaciÃ³n.' + space(40) + CHAR(10) + CHAR(13) + 
 							'Presupuesto: ' + convert(VARCHAR,@presupuestoLicitacion,1) + CHAR(10) + CHAR(13) +
 						   	'Saldo: ' + convert(VARCHAR,@RestanteLicitacion ,1) + CHAR(10) + CHAR(13) +
 						   	'Total Factura: ' + convert(VARCHAR,@ValorFactura,1) + CHAR(10) + CHAR(13) +
@@ -603,14 +604,14 @@ BEGIN
 				
 				--IF @bl_generadaauto=1
 				--BEGIN				
-				--	SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 2 AS 'Estado' ;
+				--	SELECT 	'La resoluciÃ³n: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.' AS 'Respuesta', 2 AS 'Estado' ;
 				--END
 				--ELSE
 				--BEGIN
-				--	SELECT 	'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.' AS 'Respuesta', 1 AS 'Estado' ;
+				--	SELECT 	'La resoluciÃ³n: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.' AS 'Respuesta', 1 AS 'Estado' ;
 				--END
 				
-				SET @ds_RespuestaJOB = 'La resolución: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resolución de la sucursal e implante.';
+				SET @ds_RespuestaJOB = 'La resoluciÃ³n: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.';
 				RETURN 1 
 			END 
 
@@ -843,7 +844,7 @@ BEGIN
 
 			Declare @ValidarSrvAsociado  Varchar(8000)
 			set @ValidarSrvAsociado   = ''
-			SELECT @ValidarSrvAsociado = @ValidarSrvAsociado + 'El Items: "' + CASE WHEN ISNULL(fs.ds_servicio,'')<>'' THEN rtrim(fs.ds_servicio) ELSE rtrim(fs.ds_descrip) END + '" no tiene servicio asociado y el concepto de facturación: "' + rtrim(cf.ds_nombre) + '" lo exige' + char(10) + Char(13)
+			SELECT @ValidarSrvAsociado = @ValidarSrvAsociado + 'El Items: "' + CASE WHEN ISNULL(fs.ds_servicio,'')<>'' THEN rtrim(fs.ds_servicio) ELSE rtrim(fs.ds_descrip) END + '" no tiene servicio asociado y el concepto de facturaciÃ³n: "' + rtrim(cf.ds_nombre) + '" lo exige' + char(10) + Char(13)
 			FROM Fac_servicios fs
 			INNER JOIN ConceptoFacturacion cf  On cf.id = fs.id_ConceptoFacturacion
 			WHERE Id_fac_factura = @NewFacId AND ISNULL(cf.bl_ExigirServicioAsociado,0) <> 0 AND fs.id_Fac_Servicios_Depende IS NULL
@@ -921,7 +922,7 @@ BEGIN
 					Set @Count = @Count + 1
 				End				
 			End
-			/*inicio rgelis 2013/05/10 inserción de comisiones al crear la factura*/
+			/*inicio rgelis 2013/05/10 inserciÃ³n de comisiones al crear la factura*/
 			DECLARE @Id_Factura VARCHAR(18), @EstadoInsertarComisiones Int, @MsjInsertarComisiones Varchar(8000)
 			Set @EstadoInsertarComisiones = 1
 			SET @Id_Factura=CONVERT(VARCHAR(18),@NewFacId)+','
@@ -932,7 +933,7 @@ BEGIN
 							, @Msj=@MsjInsertarComisiones
 							, @MostrarMsj ='N'
 				
-			/*fin rgelis 2013/05/10 inserción de comisiones al crear la factura*/
+			/*fin rgelis 2013/05/10 inserciÃ³n de comisiones al crear la factura*/
 						
 			/*inicio rgelis 2013/06/20 validacion de las categorias de clientes*/
 			DECLARE @EstadoCategorias Int, @MsjCategorias Varchar(8000)
@@ -1055,7 +1056,7 @@ BEGIN
 
 					IF (@Retval <> 0 Or @@Error <> 0) -- Proceso fallido				
 					BEGIN 
-						Set @procmsg = 'Error en generación de Facturación Electrónica'
+						Set @procmsg = 'Error en generaciÃ³n de FacturaciÃ³n ElectrÃ³nica'
 						IF @@TRANCOUNT > 0 
 						BEGIN 
 							ROLLBACK TRAN;	
@@ -1196,7 +1197,7 @@ BEGIN
 					BEGIN 
 						ROLLBACK TRAN ;		
 					END
-					SET @ds_RespuestaJOB = 'Error afectando la licitación';
+					SET @ds_RespuestaJOB = 'Error afectando la licitaciÃ³n';
 					RETURN @retval;
 				END
 				
@@ -1299,8 +1300,8 @@ BEGIN
 					END
 					SELECT 
 						@retval = 1, @Estado = 1
-						, @Msj = 'Excedió el máximo numero de tiquetes establecidos por factura. Revisar los parámetros del sistema.' 
-								+ CHAR(13) + 'Parametro: ''Numero máximo de tiquetes en la facturación manual'''
+						, @Msj = 'ExcediÃ³ el mÃ¡ximo numero de tiquetes establecidos por factura. Revisar los parÃ¡metros del sistema.' 
+								+ CHAR(13) + 'Parametro: ''Numero mÃ¡ximo de tiquetes en la facturaciÃ³n manual'''
 				
 					SET @ds_RespuestaJOB = @Msj;
 					RETURN @retval;
@@ -1590,7 +1591,7 @@ BEGIN
 							AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0)
 							AND ISNULL(r.in_diasvencimiento,0) > 0
 							AND r.bl_alertarvencimiento = 1
-							THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' días para el vencimiento de la resolución'
+							THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' dÃ­as para el vencimiento de la resoluciÃ³n'
 						ELSE @Resolucionmsg END											AS 'Resolucionmsg',
 			  		ISNULL(@NCF,'')														AS 'NCF',
 					ISNULL(@FechaCaducidad,@dt_vence)									AS 'FechaCaducidad',
@@ -1608,9 +1609,9 @@ BEGIN
 					@ds_RespuestaJOB = ISNULL('Factura Creada: '+F.cd_fuente+'-'+F.cd_serie+F.cd_consecutivo+'-'+CONVERT(VARCHAR(18),F.id), '') + 
 						CASE WHEN ISNULL(@MsjAlerta, '') <> '' THEN ' - Alerta: ' + @MsjAlerta ELSE '' END +
 						CASE WHEN ISNULL(
-							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' días para el vencimiento de la resolución' ELSE @Resolucionmsg END
+							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' dÃ­as para el vencimiento de la resoluciÃ³n' ELSE @Resolucionmsg END
 						, '') <> '' THEN ' - Res: ' + 
-							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' días para el vencimiento de la resolución' ELSE @Resolucionmsg END
+							CASE WHEN r.ds_num_resolucion IS NOT NULL AND DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento)<=ISNULL(r.in_diasvencimiento,0) AND ISNULL(r.in_diasvencimiento,0) > 0 AND r.bl_alertarvencimiento = 1 THEN 'Faltan ' + convert(VARCHAR,DATEDIFF(DAY,F.dt_fecha,r.dt_Fechavencimiento))  + ' dÃ­as para el vencimiento de la resoluciÃ³n' ELSE @Resolucionmsg END
 						ELSE '' END +
 						CASE WHEN ISNULL(RC.cd_fuente, '') <> '' THEN ' - Pago: ' + ISNULL(FP.ds_nombre, '') + ' ' + ISNULL(RC.cd_Fuente, '') + '-' + ISNULL(RC.cd_Serie, '') + '-' + ISNULL(RC.cd_Consecutivo, '') + ' (' + CASE RC.in_Tipo WHEN 1 THEN 'RC de Tiquetes' ELSE 'RC de otros Items' END + ') ' + ISNULL(CAST(RC.am_valor AS VARCHAR), '') ELSE '' END
 				FROM dbo.fac_factura As F
@@ -1673,7 +1674,7 @@ BEGIN
 				END	
 													
 				SET @retval = 1;
- 				SET @msg =	'Ha ocurrido un error. Información para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+ 				SET @msg =	'Ha ocurrido un error. InformaciÃ³n para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						    'Numero: ' + isnull(CAST(ERROR_NUMBER()   AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 						 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +

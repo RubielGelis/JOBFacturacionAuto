@@ -1,4 +1,4 @@
-IF OBJECT_ID('dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea', 'P') IS NOT NULL
+﻿IF OBJECT_ID('dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea', 'P') IS NOT NULL
     DROP PROCEDURE dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea;
 GO
 CREATE PROCEDURE dbo.spza_Get_GDSFacturacionAutoJOB_ItinerarioAerolinea 
@@ -64,7 +64,7 @@ BEGIN
 			IF (@bl_permit = 0)
 			BEGIN 
 				
-				SELECT 'No posee permisos suficientes para ejecutar esta acción.' AS 'Respuesta'
+				SELECT 'No posee permisos suficientes para ejecutar esta acciÃ³n.' AS 'Respuesta'
 				RETURN @retval;
 			END 
 			
@@ -214,7 +214,7 @@ BEGIN
 	   	        BEGIN 
 														
 					SET @retval = 1;
-  	 				SET @msg =	'Ha ocurrido un error. Información para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
+  	 				SET @msg =	'Ha ocurrido un error. InformaciÃ³n para soporte tecnico:'			+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							    'Numero: ' + isnull(CAST(ERROR_NUMBER()   AS VARCHAR(10)),'') 		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 								'Mensaje: ' + isnull(ERROR_MESSAGE(),'') 					   		+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
 							 	'Severidad: ' + isnull(CAST(ERROR_SEVERITY() AS VARCHAR(10)),'') 	+ CHAR(13)+ CHAR(10) + CHAR(13)+ CHAR(10) +
