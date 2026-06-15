@@ -206,7 +206,7 @@ BEGIN
 						,CASE WHEN ISNULL(bl_ExentoIva,0)<>0 THEN ISNULL(am_tao,0)+ISNULL(am_ivatao,0) ELSE ISNULL(am_tao,0) END am_tao
 						,CASE WHEN ISNULL(bl_ExentoIva,0)<>0 THEN 0 ELSE ISNULL(am_ivatao,0) END AS am_ivatao
 						, ISNULL(am_cap,0) AS 'am_cap', ISNULL(am_ivacap,0) AS 'am_ivacap', ds_cc_code2, ds_cc_number2, am_fp1, am_fp2, cd_tktrevisado, am_TarifaContado, am_IvaContado, am_OtrosContado, am_TarifaCredito, am_IvaCredito, am_OtrosCredito, am_Comision, cd_clitipodoc, cd_clitipotercero, ds_clirazoncial, ds_cliname2, ds_clilastname, ds_clilastname2, cd_clipais, ds_clitel, cd_TipoTransaccion, ISNULL(Fecha_Salida,GETDATE()) AS 'Fecha_Salida', ISNULL(Fecha_Llegada,GETDATE()) AS 'Fecha_Llegada', Id_Srv, CASE WHEN Tipo = 'Aire' THEN in_nacionalidad WHEN Tipo='Srv' AND ISNULL(cd_conceptofacturacion,'')<>'' THEN (SELECT top 1 id FROM dbo.ConceptoFacturacion WHERE cd_codigo=cd_conceptofacturacion) ELSE cd_conceptofacturacion END AS 'cd_conceptofacturacion', cd_tiposervicio, cd_proveedores, ds_proveedores, id_car, dt_entrega, in_cars, cd_carcode, cd_conf_car, cd_citysalida, dt_retorno, cd_cartype, cd_currency, am_tarifacar, cd_bookingsource, cd_ratecode, id_htl, dt_checkin, in_guests, cd_confirmation, cd_city, cd_htlchain, dt_checkout, in_noches, ds_htlname, in_habs, cd_bed, cd_ratecode_htl, cd_htlcur, am_htltarifa, cd_agcur, am_agtarifa, ds_dir1, ds_tel, ds_fax, cd_centrocosto, NumTktConj, Respuesta, ds_solicita, cd_pax_CC, ds_lapsoviaje, ds_archivo, ds_Observaciones, ds_ClienteEmail, cd_sucursal, cd_implante, bl_ClienteActualizar, bl_NotificacionMPD, cd_FormaPagoTAO, cd_TarjetaCreditoTAO, case when LEN(ISNULL(cd_NumeroTarjetaTAO,''))>5 AND ISNULL(@cd_TCTipoTarjetaMostrarNumero,'')<>ISNULL(cd_TarjetaCreditoTAO,'') then ISNULL(RIGHT(cd_NumeroTarjetaTAO,4),'') else Isnull(cd_NumeroTarjetaTAO,'') end AS cd_NumeroTarjetaTAO , cd_VencimientoTarjetaTAO, cd_NumeroPolizaTAO, cd_AnexoPolizaTAO, am_PorDesFormaPagoTA, cd_Penalidad, ds_cc_vence, ds_cc_vence2, ds_cc_autorizacion, ds_cc_autorizacion2, ds_cc_voucher, ds_cc_voucher2, ds_AutorizacionTarjetaTAO, ds_VoucherTarjetaTAO, am_fptao, in_cc_cuotas, in_cc_cuotas2, in_cuotasTarjetaTAO, cd_TipoTarifaTAO, cd_TipoTiquete, am_TasaCambio, cd_tiqueteador_facturador, bl_ahorro, in_CantidadTarifaTAO, in_CantidadSegmentoTAO, cd_tourcode, ds_contrato, cd_PasaportePax, ds_itinerarioaerolinea, ds_tkt_prefixIata, ds_Evento, cd_iata, ds_aero_codeIata, ReservaFactura, cd_Ahorro, cd_Categoria, Id_FormasPagoAirPlus, cd_FormasPagoAirPlus, ds_FormasPagoAirPlus, cd_TarjetasCreditoAirPlus, ds_numerotarjetaAirPlus, am_PorFacParcial, am_PorFacParcial_Utilizar, in_cantpax, Id_Precompra, id_sucursal, bl_cotizacion, cd_htl, CASE WHEN ISNULL(id_FormasPago,0)=0 AND ISNULL(ds_cc_code,'')='' THEN 1 WHEN ISNULL(id_FormasPago,0)=0 AND ISNULL(ds_cc_code,'')<>'' THEN 2 ELSE id_FormasPago END AS 'id_FormasPago', CASE WHEN ISNULL(id_TarjetasCredito,0)=0 THEN (SELECT id FROM dbo.TarjetasCredito WHERE cd_codigo=ds_cc_code) ELSE id_TarjetasCredito END AS 'id_TarjetasCredito'
-						, id_formapago_cliente, cd_formapago_cliente, ds_formapago_cliente,cd_fp_OtrosItems, cd_auxiliar, cd_tipoventa,am_iva2,cd_licitacion, ds_descripcion, id_tipoproveedor, cd_tipoproveedor, ds_tipoproveedor, cd_Consecutivo_variablesadicionales	
+						, id_formapago_cliente, cd_formapago_cliente, ds_formapago_cliente,cd_fp_OtrosItems, cd_auxiliar, cd_tipoventa,am_iva2,cd_licitacion, ds_descripcion, id_tipoproveedor, cd_tipoproveedor, ds_tipoproveedor, cd_Consecutivo_variablesadicionales, cd_item	
 				FROM (
 					SELECT DISTINCT
 						PNR = r.cd_codigo,
@@ -433,6 +433,7 @@ BEGIN
 						,cd_tipoproveedor = ''
 						,ds_tipoproveedor = ''
 						,cd_Consecutivo_variablesadicionales=NULL
+						,cd_item = ''
 					FROM dbo.ReservasGDS r
 					INNER JOIN dbo.ReservaGDS_Detalles tkt ON (r.id=tkt.id_reserva)
 					LEFT JOIN #TablaReservas tr ON (tr.Id_ReservasGDS=tkt.id_reserva AND tr.id_ReservaGDS_Detalles=tkt.id)/* rgelis 2013/07/18 req.15537 */
@@ -673,6 +674,7 @@ BEGIN
 					,cd_tipoproveedor=ISNULL(srv.cd_tipoproveedor,'')
 					,ds_tipoproveedor=ISNULL(srv.ds_tipoproveedor,'')
 					,cd_Consecutivo_variablesadicionales=NULL
+					,cd_item = ''
 				FROM dbo.ReservasGDS r
 				INNER JOIN dbo.ReservaGDS_Servicios srv ON r.id=srv.id_reserva 				 
 				INNER JOIN dbo.ReservaGDS_CAR car ON (car.id_reserva = r.id AND car.ds_indice=srv.ds_indice)	 
@@ -899,6 +901,7 @@ BEGIN
 					,cd_tipoproveedor=ISNULL(srv.cd_tipoproveedor,'')
 					,ds_tipoproveedor=ISNULL(srv.ds_tipoproveedor,'')
 					,cd_Consecutivo_variablesadicionales=NULL
+					,cd_item = ''
 				FROM dbo.ReservasGDS r
 				INNER JOIN dbo.ReservaGDS_Servicios srv ON srv.id_reserva = r.id 
 				INNER JOIN dbo.ReservaGDS_HTL htl ON (htl.id_reserva = r.id AND htl.ds_indice=srv.ds_indice)
@@ -1129,6 +1132,7 @@ BEGIN
 					,cd_tipoproveedor=ISNULL(srv.cd_tipoproveedor,'')
 					,ds_tipoproveedor=ISNULL(srv.ds_tipoproveedor,'')
 					,cd_Consecutivo_variablesadicionales=NULL
+					,cd_item = ''
 				FROM dbo.ReservasGDS r
 				INNER JOIN (
 								SELECT DISTINCT top 100  rfa.cd_sucursal,rfa.cd_implante,rfa.id_reserva,rfa.ds_Archivo 

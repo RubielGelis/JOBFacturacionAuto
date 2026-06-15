@@ -135,6 +135,7 @@ Begin
 	Declare @item_am_IvaCredito MONEY
 	Declare @item_cd_centrocosto VARCHAR(50)
 	Declare @item_cd_auxiliar VARCHAR(50)
+	DECLARE @item_cd_item VARCHAR(50)
 	Declare @item_cd_fp_OtrosItems VARCHAR(3)
 	Declare @item_id_tipoproveedor INT
 	Declare @item_cd_tipoproveedor VARCHAR(10)
@@ -503,7 +504,8 @@ Begin
 		id_tipoproveedor INT,
 		cd_tipoproveedor VARCHAR(10) COLLATE DATABASE_DEFAULT,
 		ds_tipoproveedor VARCHAR(100) COLLATE DATABASE_DEFAULT,
-		cd_Consecutivo_variablesadicionales VARCHAR(50) COLLATE DATABASE_DEFAULT
+		cd_Consecutivo_variablesadicionales VARCHAR(50) COLLATE DATABASE_DEFAULT,
+		cd_item VARCHAR(50) COLLATE DATABASE_DEFAULT
 	);
 
 	CREATE TABLE #CargosImpuestosJob (
@@ -902,7 +904,7 @@ Begin
 					am_highfare, am_lowfare, ds_solicita, ds_lapsoviaje, cd_tktrevisado, cd_PasaportePax, cd_pax_CC, am_PorFacParcial, in_cantpax, Id_Precompra,
 					cd_FormaPagoTAO, cd_TarjetaCreditoTAO, cd_NumeroTarjetaTAO, am_fptao, am_tao, am_ivatao, Id_Srv, cd_conceptofacturacion,
 					cd_tiposervicio, cd_proveedores, ds_proveedores, cd_confirmation, dt_checkin, dt_checkout, cd_city, in_noches,
-					Servicio, Descrip, am_TarifaContado, am_IvaContado, am_TarifaCredito, am_IvaCredito, cd_centrocosto, cd_auxiliar,
+					Servicio, Descrip, am_TarifaContado, am_IvaContado, am_TarifaCredito, am_IvaCredito, cd_centrocosto, cd_auxiliar, cd_item,
 					cd_fp_OtrosItems, id_tipoproveedor, cd_tipoproveedor, ds_tipoproveedor, Fecha_Salida, Fecha_Llegada, PNR,
 					ds_itinerarioaerolinea, ds_tkt_prefix, bl_ahorro, cd_VencimientoTarjetaTAO, cd_NumeroPolizaTAO, cd_AnexoPolizaTAO,
 					ds_AutorizacionTarjetaTAO, in_cuotasTarjetaTAO, id_FormasPago, id_TarjetasCredito,
@@ -918,7 +920,7 @@ Begin
 					@item_am_highfare, @item_am_lowfare, @item_ds_solicita, @item_ds_lapsoviaje, @item_cd_tktrevisado, @item_cd_PasaportePax, @item_cd_pax_CC, @item_am_PorFacParcial, @item_in_cantpax, @item_Id_Precompra,
 					@item_cd_FormaPagoTAO, @item_TarjetaCreditoTAO, @item_NumeroTarjetaTAO, @item_am_fptao, @item_am_tao, @item_am_ivatao, @item_Id_Srv, @item_cd_conceptofacturacion,
 					@item_cd_tiposervicio, @item_cd_proveedores, @item_ds_proveedores, @item_cd_confirmation, @item_dt_checkin, @item_dt_checkout, @item_cd_city, @item_in_noches,
-					@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar,
+					@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar, @item_cd_item,
 					@item_cd_fp_OtrosItems, @item_id_tipoproveedor, @item_cd_tipoproveedor, @item_ds_tipoproveedor, @item_Fecha_Salida, @item_Fecha_Llegada, @item_PNR,
 					@item_ds_itinerarioaerolinea, @item_ds_tkt_prefix, @item_bl_ahorro, @item_cd_VencimientoTarjetaTAO, @item_cd_NumeroPolizaTAO, @item_cd_AnexoPolizaTAO,
 					@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO, @item_id_FormasPago, @item_id_TarjetasCredito,
@@ -985,7 +987,7 @@ Begin
 						am_basecomisionable, am_porcomision, OrdenGrabacion, CodigoReserva
 					)
 					VALUES (
-						'TKT', @item_id_reserva, @item_ds_tkt_number, @item_in_nacionalidad, @item_cd_centrocosto, @item_cd_auxiliar, 'TKT',
+						'TKT', @item_id_reserva, @item_ds_tkt_number, @item_in_nacionalidad, @item_cd_centrocosto, @item_cd_auxiliar, @item_cd_item,
 						@item_am_tarifa, @item_am_iva, @item_am_tua, @item_am_comb, @item_am_vat, @item_am_Comision,
 						@item_ds_pax_firstnm, @item_ds_pax_lastnm, @item_ds_pax_prefix, @item_cd_tourcode, @item_NumTktConj, @item_cd_TipoTiquete, @item_id_air,
 						@item_ds_itinerario, @item_ds_itinerarioaerolinea, @item_ds_clases, @item_ds_Observaciones,
@@ -1207,7 +1209,7 @@ Begin
 						@item_am_highfare, @item_am_lowfare, @item_ds_solicita, @item_ds_lapsoviaje, @item_cd_tktrevisado, @item_cd_PasaportePax, @item_cd_pax_CC, @item_am_PorFacParcial, @item_in_cantpax, @item_Id_Precompra,
 						@item_cd_FormaPagoTAO, @item_TarjetaCreditoTAO, @item_NumeroTarjetaTAO, @item_am_fptao, @item_am_tao, @item_am_ivatao, @item_Id_Srv, @item_cd_conceptofacturacion,
 						@item_cd_tiposervicio, @item_cd_proveedores, @item_ds_proveedores, @item_cd_confirmation, @item_dt_checkin, @item_dt_checkout, @item_cd_city, @item_in_noches,
-						@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar,
+						@item_Servicio, @item_Descrip, @item_am_TarifaContado, @item_am_IvaContado, @item_am_TarifaCredito, @item_am_IvaCredito, @item_cd_centrocosto, @item_cd_auxiliar, @item_cd_item,
 						@item_cd_fp_OtrosItems, @item_id_tipoproveedor, @item_cd_tipoproveedor, @item_ds_tipoproveedor, @item_Fecha_Salida, @item_Fecha_Llegada, @item_PNR,
 						@item_ds_itinerarioaerolinea, @item_ds_tkt_prefix, @item_bl_ahorro, @item_cd_VencimientoTarjetaTAO, @item_cd_NumeroPolizaTAO, @item_cd_AnexoPolizaTAO,
 						@item_ds_AutorizacionTarjetaTAO, @item_in_cuotasTarjetaTAO, @item_id_FormasPago, @item_id_TarjetasCredito,
@@ -1335,12 +1337,12 @@ Begin
 					BEGIN
 						-- Fallback 2: Fixed charges/taxes according to type
 						IF @c_tipo_item = 'TAO'
-						BEGIN
+						BEGIN 
 							-- For TAO: TAR, OTR, IVA
 							INSERT INTO #TmpFacturaCargos (id_item, cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp, bl_iva, in_orden)
 							VALUES 
 								(@NewConceptItemId, 'TAR', 'Tarifa', 'C', 0, @c_Valor, @c_am_Contado, @c_am_Credito, 1, 0, 0, 1),
-								(@NewConceptItemId, 'OTR', 'Otros', 'C', 0, 0, 0, 0, 1, 0, 0, 2);
+								(@NewConceptItemId, 'OTR', 'Otros cargos', 'C', 0, 0, 0, 0, 4, 0, 0, 2);
 
 							IF ISNULL(@c_ValorIva, 0) >= 0
 							BEGIN
@@ -1353,7 +1355,7 @@ Begin
 							-- For Services/Fees: TAR, IVA
 							INSERT INTO #TmpFacturaCargos (id_item, cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp, bl_iva, in_orden)
 							VALUES (@NewConceptItemId, 'TAR', 'Tarifa', 'C', 0, @c_Valor, @c_am_Contado, @c_am_Credito, 1, 0, 0, 1),
-								   (@NewConceptItemId, 'OTR', 'Otros', 'C', 0, 0, 0, 0, 1, 0, 0, 2);
+								   (@NewConceptItemId, 'OTR', 'Otros', 'C', 0, 0, 0, 0, 4, 0, 0, 2);
 
 							IF ISNULL(@c_ValorIva, 0) >= 0
 							BEGIN
@@ -1489,7 +1491,7 @@ Begin
 				INNER JOIN #TmpFacturaItems FI ON FI.id_item = FP.id_item
 				INNER JOIN dbo.ConceptoFacturacion CF ON CF.id = FI.id_conceptofacturacion
 				WHERE (@CalcularAutoValoresItemFac = 'S' OR CF.bl_CalculoAutoValoresFacturacion=1);
-
+				
 				-- Reconstruct dynamic @SqlStmt from tables
 				SET @SqlStmt = '';
 				SET @ItemIndex = 1;
@@ -1529,8 +1531,9 @@ Begin
 					@gen_am_valorprov, @gen_id_monedaprov, @gen_dt_llegada, @gen_dt_salida, @gen_am_pordescuento, @gen_Fecha_Salida, @gen_Fecha_Llegada, @gen_am_basedescuento, @gen_cd_Consecutivo_depende, @gen_cd_Consecutivo_variablesadicionales, @gen_id_referencia_origen;
 			
 				
+
 				WHILE @@FETCH_STATUS = 0
-				BEGIN
+				BEGIN 
 					IF @gen_tipo_item = 'TKT'
 					BEGIN
 						-- Build cargos / impuestos SQL
@@ -1563,30 +1566,14 @@ Begin
 						
 						DECLARE @TktImpuestosSqlStmt VARCHAR(MAX) = '';
 						
-						-- First Pass: accumulate taxes
-						DECLARE curItemTaxes CURSOR LOCAL FAST_FORWARD FOR
-						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
-						FROM #TmpFacturaCargos
-						WHERE id_item = @gen_id_item AND cd_tipo IN ('I','R');
-
-						OPEN curItemTaxes;
-						FETCH NEXT FROM curItemTaxes INTO @c_codigo, @ds_nombre, @cd_tipo, @am_porcentaje, @am_valor, @am_contado, @am_credito, @id_carg, @id_imp;
-						WHILE @@FETCH_STATUS = 0
-						BEGIN
-							SET @TktImpuestosSqlStmt = @TktImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TiqueteImpuestos_Insertar @id_tiquetecargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@id_imp, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@am_credito AS VARCHAR) + ', @am_porcentaje = ' + CAST(@am_porcentaje AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar=1;'  
-							FETCH NEXT FROM curItemTaxes INTO @c_codigo, @ds_nombre, @cd_tipo, @am_porcentaje, @am_valor, @am_contado, @am_credito, @id_carg, @id_imp;
-						END
-						CLOSE curItemTaxes;
-						DEALLOCATE curItemTaxes;
-
 						-- Second Pass: cargos
-						DECLARE @HasTktTarCargo BIT = 0;
-						IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
-						BEGIN
-							SET @HasTktTarCargo = 1;
-						END
-
-						DECLARE @IsFirstTktCargo BIT = 1;
+						--DECLARE @HasTktTarCargo BIT = 0;
+						--IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
+						--BEGIN
+						--	SET @HasTktTarCargo = 1;
+						--END
+						--
+						--DECLARE @IsFirstTktCargo BIT = 1;
 
 						DECLARE curItemCargos CURSOR LOCAL FAST_FORWARD FOR
 						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
@@ -1597,15 +1584,25 @@ Begin
 						FETCH NEXT FROM curItemCargos INTO @c_codigo, @ds_nombre, @cd_tipo, @am_porcentaje, @am_valor, @am_contado, @am_credito, @id_carg, @id_imp;
 						WHILE @@FETCH_STATUS = 0
 						BEGIN
-							IF (@HasTktTarCargo = 1 AND @c_codigo = 'TAR') OR (@HasTktTarCargo = 0 AND @IsFirstTktCargo = 1)
+							DECLARE @c_codigotax VARCHAR(20), @ds_nombretax VARCHAR(100), @cd_tipotax CHAR(1), @am_porcentajetax NUMERIC(8,4), @am_valortax MONEY, @am_contadotax MONEY, @am_creditotax MONEY, @id_cargtax INT, @id_imptax INT;
+							SET @TktImpuestosSqlStmt='';
+							DECLARE curItemTaxes CURSOR LOCAL FAST_FORWARD FOR
+							SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
+							FROM #TmpFacturaCargos
+							WHERE id_item = @gen_id_item AND id_carg = @id_carg AND cd_tipo IN ('I','R');
+
+							OPEN curItemTaxes;
+							FETCH NEXT FROM curItemTaxes INTO @c_codigotax, @ds_nombretax, @cd_tipotax, @am_porcentajetax, @am_valortax, @am_contadotax, @am_creditotax, @id_cargtax, @id_imptax;
+							WHILE @@FETCH_STATUS = 0
 							BEGIN
-								SET @TktSqlStmt = @TktSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TiqueteCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @id_tiquetes = @NewTktId, @id_cargosdesc = ' + CAST(ISNULL(@id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@TktImpuestosSqlStmt, '''', '''''') + ''';'  
-								SET @IsFirstTktCargo = 0;
+								SET @TktImpuestosSqlStmt = @TktImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TiqueteImpuestos_Insertar @id_tiquetecargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@id_imptax, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@ds_nombretax, '''', '''''') + ''', @am_valor = ' + CAST(@am_valortax AS VARCHAR) + ', @am_contado = ' + CAST(@am_contadotax AS VARCHAR) + ', @am_credito = ' + CAST(@am_credito AS VARCHAR) + ', @am_porcentaje = ' + CAST(@am_porcentajetax AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar=1;'  
+								FETCH NEXT FROM curItemTaxes INTO @c_codigotax, @ds_nombretax, @cd_tipotax, @am_porcentajetax, @am_valortax, @am_contadotax, @am_creditotax, @id_cargtax, @id_imptax;
 							END
-							ELSE
-							BEGIN
-								SET @TktSqlStmt = @TktSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TiqueteCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @id_tiquetes = @NewTktId, @id_cargosdesc = ' + CAST(ISNULL(@id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = N'''';' 
-							END
+							CLOSE curItemTaxes;
+							DEALLOCATE curItemTaxes;
+
+							SET @TktSqlStmt = @TktSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TiqueteCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @id_tiquetes = @NewTktId, @id_cargosdesc = ' + CAST(ISNULL(@id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@TktImpuestosSqlStmt, '''', '''''') + ''';'  
+							
 							FETCH NEXT FROM curItemCargos INTO @c_codigo, @ds_nombre, @cd_tipo, @am_porcentaje, @am_valor, @am_contado, @am_credito, @id_carg, @id_imp;
 						END
 						CLOSE curItemCargos;
@@ -1737,31 +1734,15 @@ Begin
 						
 						DECLARE @TaoImpuestosSqlStmt VARCHAR(MAX) = '';
 						
-						-- First Pass: accumulate taxes
-						DECLARE curItemTaoTaxes CURSOR LOCAL FAST_FORWARD FOR
-						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
-						FROM #TmpFacturaCargos
-						WHERE id_item = @gen_id_item AND cd_tipo IN ('I','R');
+						---- Second Pass: cargos
+						--DECLARE @HasTaoTarCargo BIT = 0;
+						--IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
+						--BEGIN
+						--	SET @HasTaoTarCargo = 1;
+						--END
 
-						OPEN curItemTaoTaxes;
-						FETCH NEXT FROM curItemTaoTaxes INTO @tc_codigo, @tc_ds_nombre, @tc_cd_tipo, @tc_am_porcentaje, @tc_am_valor, @tc_am_contado, @tc_am_credito, @tc_id_carg, @tc_id_imp;
-						WHILE @@FETCH_STATUS = 0
-						BEGIN
-							SET @TaoImpuestosSqlStmt = @TaoImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TaoImpuestos_Insertar @id_FacTaoCargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@tc_id_imp, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@tc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@tc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@tc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@tc_am_credito AS VARCHAR) + ', @am_porcentaje=' + CAST(@tc_am_porcentaje AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar=1;' 
-							FETCH NEXT FROM curItemTaoTaxes INTO @tc_codigo, @tc_ds_nombre, @tc_cd_tipo, @tc_am_porcentaje, @tc_am_valor, @tc_am_contado, @tc_am_credito, @tc_id_carg, @tc_id_imp;
-						END
-						CLOSE curItemTaoTaxes;
-						DEALLOCATE curItemTaoTaxes;
-
-						-- Second Pass: cargos
-						DECLARE @HasTaoTarCargo BIT = 0;
-						IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
-						BEGIN
-							SET @HasTaoTarCargo = 1;
-						END
-
-						DECLARE @IsFirstTaoCargo BIT = 1;
-
+						--DECLARE @IsFirstTaoCargo BIT = 1;
+						
 						DECLARE curItemTaoCargos CURSOR LOCAL FAST_FORWARD FOR
 						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
 						FROM #TmpFacturaCargos
@@ -1771,15 +1752,25 @@ Begin
 						FETCH NEXT FROM curItemTaoCargos INTO @tc_codigo, @tc_ds_nombre, @tc_cd_tipo, @tc_am_porcentaje, @tc_am_valor, @tc_am_contado, @tc_am_credito, @tc_id_carg, @tc_id_imp;
 						WHILE @@FETCH_STATUS = 0
 						BEGIN
-							IF (@HasTaoTarCargo = 1 AND @tc_codigo = 'TAR') OR (@HasTaoTarCargo = 0 AND @IsFirstTaoCargo = 1)
+							DECLARE @tc_codigotax VARCHAR(20), @tc_ds_nombretax VARCHAR(100), @tc_cd_tipotax CHAR(1), @tc_am_porcentajetax NUMERIC(8,4), @tc_am_valortax MONEY, @tc_am_contadotax MONEY, @tc_am_creditotax MONEY, @tc_id_cargtax INT, @tc_id_imptax INT;
+							SET @TaoImpuestosSqlStmt='';
+
+							DECLARE curItemTaoTaxes CURSOR LOCAL FAST_FORWARD FOR
+							SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
+							FROM #TmpFacturaCargos
+							WHERE id_item = @gen_id_item AND id_carg=@tc_id_carg AND cd_tipo IN ('I','R');
+
+							OPEN curItemTaoTaxes;
+							FETCH NEXT FROM curItemTaoTaxes INTO @tc_codigotax, @tc_ds_nombretax, @tc_cd_tipotax, @tc_am_porcentajetax, @tc_am_valortax, @tc_am_contadotax, @tc_am_creditotax, @tc_id_cargtax, @tc_id_imptax;	
+							WHILE @@FETCH_STATUS = 0
 							BEGIN
-								SET @TaoCargSqlStmt = @TaoCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TaoCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @Id_Fac_Tao = @NewTaoId, @id_cargosdesc = ' + CAST(ISNULL(@tc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@tc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@tc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@tc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@tc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@TaoImpuestosSqlStmt, '''', '''''') + ''';' 
-								SET @IsFirstTaoCargo = 0;
+								SET @TaoImpuestosSqlStmt = @TaoImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TaoImpuestos_Insertar @id_FacTaoCargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@tc_id_imptax, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@tc_ds_nombretax, '''', '''''') + ''', @am_valor = ' + CAST(@tc_am_valortax AS VARCHAR) + ', @am_contado = ' + CAST(@tc_am_contadotax AS VARCHAR) + ', @am_credito = ' + CAST(@tc_am_creditotax AS VARCHAR) + ', @am_porcentaje=' + CAST(@tc_am_porcentajetax AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar=1;' 
+								FETCH NEXT FROM curItemTaoTaxes INTO @tc_codigotax, @tc_ds_nombretax, @tc_cd_tipotax, @tc_am_porcentajetax, @tc_am_valortax, @tc_am_contadotax, @tc_am_creditotax, @tc_id_cargtax, @tc_id_imptax;
 							END
-							ELSE
-							BEGIN
-								SET @TaoCargSqlStmt = @TaoCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TaoCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @Id_Fac_Tao = @NewTaoId, @id_cargosdesc = ' + CAST(ISNULL(@tc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@tc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@tc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@tc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@tc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = N'''';' 
-							END
+							CLOSE curItemTaoTaxes;
+							DEALLOCATE curItemTaoTaxes;
+
+							SET @TaoCargSqlStmt = @TaoCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_TaoCargos_Insertar @id_fac_remision = @NewRmId, @id_fac_factura = @NewFacId, @Id_Fac_Tao = @NewTaoId, @id_cargosdesc = ' + CAST(ISNULL(@tc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@tc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@tc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@tc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@tc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@TaoImpuestosSqlStmt, '''', '''''') + ''';' 
 							FETCH NEXT FROM curItemTaoCargos INTO @tc_codigo, @tc_ds_nombre, @tc_cd_tipo, @tc_am_porcentaje, @tc_am_valor, @tc_am_contado, @tc_am_credito, @tc_id_carg, @tc_id_imp;
 						END
 						CLOSE curItemTaoCargos;
@@ -1862,48 +1853,43 @@ Begin
 						DECLARE @HasTarCargo BIT, @IsFirstCargo BIT;
 						
 						-- First Pass: accumulate service taxes (impuestos/retenciones)
-						DECLARE curItemSrvTaxes CURSOR LOCAL FAST_FORWARD FOR
-						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
-						FROM #TmpFacturaCargos
-						WHERE id_item = @gen_id_item AND cd_tipo IN ('I','R');
-
-						OPEN curItemSrvTaxes;
-						FETCH NEXT FROM curItemSrvTaxes INTO @sc_codigo, @sc_ds_nombre, @sc_cd_tipo, @sc_am_porcentaje, @sc_am_valor, @sc_am_contado, @sc_am_credito, @sc_id_carg, @sc_id_imp;
-						WHILE @@FETCH_STATUS = 0
-						BEGIN
-							SET @SrvImpuestosSqlStmt = @SrvImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_ServicioImpuestos_Insertar @id_FacServiciosCargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@sc_id_imp, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@sc_ds_nombre, '''', '''''') + ''', @cd_impcta = '''', @am_valor = ' + CAST(@sc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@sc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@sc_am_credito AS VARCHAR) + ', @am_porcentaje = ' + CAST(@sc_am_porcentaje AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar = 1, @am_deltaCorreccion = 0;' 
-							FETCH NEXT FROM curItemSrvTaxes INTO @sc_codigo, @sc_ds_nombre, @sc_cd_tipo, @sc_am_porcentaje, @sc_am_valor, @sc_am_contado, @sc_am_credito, @sc_id_carg, @sc_id_imp;
-						END
-						CLOSE curItemSrvTaxes;
-						DEALLOCATE curItemSrvTaxes;
-
 						-- Second Pass: process cargos and link accumulated taxes to 'TAR' or first cargo
 						DECLARE curItemSrvCargos CURSOR LOCAL FAST_FORWARD FOR
 						SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
 						FROM #TmpFacturaCargos
 						WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D');
 
-						SET @HasTarCargo = 0;
-						IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
-						BEGIN
-							SET @HasTarCargo = 1;
-						END
-
-						SET @IsFirstCargo = 1;
+						--SET @HasTarCargo = 0;
+						--IF EXISTS (SELECT 1 FROM #TmpFacturaCargos WHERE id_item = @gen_id_item AND cd_tipo IN ('C','D') AND cd_codigo = 'TAR')
+						--BEGIN
+						--	SET @HasTarCargo = 1;
+						--END
+						--
+						--SET @IsFirstCargo = 1;
 
 						OPEN curItemSrvCargos;
 						FETCH NEXT FROM curItemSrvCargos INTO @sc_codigo, @sc_ds_nombre, @sc_cd_tipo, @sc_am_porcentaje, @sc_am_valor, @sc_am_contado, @sc_am_credito, @sc_id_carg, @sc_id_imp;
 						WHILE @@FETCH_STATUS = 0
 						BEGIN
-							IF (@HasTarCargo = 1 AND @sc_codigo = 'TAR') OR (@HasTarCargo = 0 AND @IsFirstCargo = 1)
+							DECLARE @sc_codigotax VARCHAR(20), @sc_ds_nombretax VARCHAR(100), @sc_cd_tipotax CHAR(1), @sc_am_porcentajetax NUMERIC(8,4), @sc_am_valortax MONEY, @sc_am_contadotax MONEY, @sc_am_creditotax MONEY, @sc_id_cargtax INT, @sc_id_imptax INT;
+							SET @SrvImpuestosSqlStmt='';
+							DECLARE curItemSrvTaxes CURSOR LOCAL FAST_FORWARD FOR
+							SELECT cd_codigo, ds_nombre, cd_tipo, am_porcentaje, am_valor, am_contado, am_credito, id_carg, id_imp
+							FROM #TmpFacturaCargos
+							WHERE id_item = @gen_id_item AND id_carg=@sc_id_carg AND cd_tipo IN ('I','R');
+
+							OPEN curItemSrvTaxes;
+							FETCH NEXT FROM curItemSrvTaxes INTO @sc_codigotax, @sc_ds_nombretax, @sc_cd_tipotax, @sc_am_porcentaje, @sc_am_valor, @sc_am_contadotax, @sc_am_creditotax, @sc_id_cargtax, @sc_id_imptax;
+							WHILE @@FETCH_STATUS = 0
 							BEGIN
-								SET @SrvCargSqlStmt = @SrvCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_ServicioCargos_Insertar @id_Fac_Servicios = @NewSrvId, @id_cargosdesc = ' + CAST(ISNULL(@sc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@sc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@sc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@sc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@sc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@SrvImpuestosSqlStmt, '''', '''''') + ''';' 
-								SET @IsFirstCargo = 0;
+								SET @SrvImpuestosSqlStmt = @SrvImpuestosSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_ServicioImpuestos_Insertar @id_FacServiciosCargos = @NewCargId, @id_impret = ' + CAST(ISNULL(@sc_id_imptax, 1) AS VARCHAR) + ', @ds_impas = ''' + REPLACE(@sc_ds_nombretax, '''', '''''') + ''', @cd_impcta = '''', @am_valor = ' + CAST(@sc_am_valortax AS VARCHAR) + ', @am_contado = ' + CAST(@sc_am_contadotax AS VARCHAR) + ', @am_credito = ' + CAST(@sc_am_creditotax AS VARCHAR) + ', @am_porcentaje = ' + CAST(@sc_am_porcentajetax AS VARCHAR) + ', @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @bl_contabilizar = 1, @am_deltaCorreccion = 0;' 
+								FETCH NEXT FROM curItemSrvTaxes INTO @sc_codigotax, @sc_ds_nombretax, @sc_cd_tipotax, @sc_am_porcentajetax, @sc_am_valortax, @sc_am_contadotax, @sc_am_creditotax, @sc_id_cargtax, @sc_id_imptax;
 							END
-							ELSE
-							BEGIN
-								SET @SrvCargSqlStmt = @SrvCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_ServicioCargos_Insertar @id_Fac_Servicios = @NewSrvId, @id_cargosdesc = ' + CAST(ISNULL(@sc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@sc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@sc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@sc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@sc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = N'''';' 
-							END
+							CLOSE curItemSrvTaxes;
+							DEALLOCATE curItemSrvTaxes;
+
+							SET @SrvCargSqlStmt = @SrvCargSqlStmt + CHAR(13) + CHAR(10) + ' EXECUTE dbo.spza_ServicioCargos_Insertar @id_Fac_Servicios = @NewSrvId, @id_cargosdesc = ' + CAST(ISNULL(@sc_id_carg, 1) AS VARCHAR) + ', @ds_cargonm = ''' + REPLACE(@sc_ds_nombre, '''', '''''') + ''', @am_valor = ' + CAST(@sc_am_valor AS VARCHAR) + ', @am_contado = ' + CAST(@sc_am_contado AS VARCHAR) + ', @am_credito = ' + CAST(@sc_am_credito AS VARCHAR) + ', @bl_noshow = 0, @id_monedas_iata = @id_monedas_iata, @Tcambio = @Tcambio, @SqlStmt = ''' + REPLACE(@SrvImpuestosSqlStmt, '''', '''''') + ''';' 
+							
 							FETCH NEXT FROM curItemSrvCargos INTO @sc_codigo, @sc_ds_nombre, @sc_cd_tipo, @sc_am_porcentaje, @sc_am_valor, @sc_am_contado, @sc_am_credito, @sc_id_carg, @sc_id_imp;
 						END
 						CLOSE curItemSrvCargos;
