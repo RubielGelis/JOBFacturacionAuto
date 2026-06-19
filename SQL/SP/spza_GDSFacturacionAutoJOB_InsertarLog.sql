@@ -1,7 +1,7 @@
-﻿IF OBJECT_ID('dbo.spza_GDSFacturacionAuto_InsertarLog', 'P') IS NOT NULL
-    DROP PROCEDURE dbo.spza_GDSFacturacionAuto_InsertarLog;
+﻿IF OBJECT_ID('dbo.spza_GDSFacturacionAutoJOB_InsertarLog', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.spza_GDSFacturacionAutoJOB_InsertarLog;
 GO
-CREATE PROCEDURE [dbo].[spza_GDSFacturacionAuto_InsertarLog] 
+CREATE PROCEDURE [dbo].[spza_GDSFacturacionAutoJOB_InsertarLog] 
 	-- Parametros del procedimiento
 	@id_usuario		INT,
 	@cd_sucursal	CHAR(5), 
