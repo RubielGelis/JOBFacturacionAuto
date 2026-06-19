@@ -611,7 +611,7 @@ BEGIN
 				--	SELECT 	'La resoluciÃ³n: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.' AS 'Respuesta', 1 AS 'Estado' ;
 				--END
 				
-				SET @ds_RespuestaJOB = 'La resoluciÃ³n: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.';
+				SET @ds_RespuestaJOB = 'La resolucion: ' + @ds_num_resolucion + ' esta Vencida. Verficar parametrizacion en el maestro de resoluciones o los datos de resoluciÃ³n de la sucursal e implante.';
 				RETURN 1 
 			END 
 
@@ -1448,6 +1448,25 @@ BEGIN
 					END
 				END	
 			END
+
+			IF NOT EXISTS(SELECT TOP 1 F.id FROM dbo.fac_factura F
+						LEFT JOIN dbo.Tiquetes T ON T.id_fac_factura=F.id
+						LEFT JOIN dbo.Fac_Tao FT ON FT.id_fac_factura=F.id
+						LEFT JOIN dbo.Fac_Servicios FS ON FS.id_fac_factura=F.id
+					  WHERE T.id IS NOT NULL OR FT.id IS NOT NULL OR FS.id IS NOT NULL
+					 )
+			BEGIN
+				IF @@TRANCOUNT > 0 
+				BEGIN 
+					ROLLBACK TRAN ;		
+				END
+
+				SELECT @Estado = 1
+					  , @Msj = 'Error en el crear factura no tiene item(tiquetes, tao o servicios)';
+				SET @ds_RespuestaJOB = @Msj;
+				RETURN 1;
+			END
+
 			--Contabilizando la Factura
 			SET @retval=0 --inicio rgelis 2018/02/16 req.33683
 			IF (NOT (dbo.fnza_Get_FacturaTotal(@NewFacId) = 0) AND @bl_nocont = 0) 
